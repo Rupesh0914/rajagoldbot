@@ -14,6 +14,8 @@ Guidance for any assistant working in this repo.
 - Never commit, print or log passwords, API keys or account numbers.
 - The bot acts on closed candles only and never looks ahead. Every piece needs a test that its
   past output does not change when later data arrives.
-- No strategy setting is tuned on test results. The honest-testing rules arrive in lesson 9 and
-  are fixed before data is seen.
+- Price history is split in `research/DATA_SPLIT.md`. Ideas may be tried, fixed and tried again
+  on the development part only. Never load, print or summarise a bar from the validation or
+  holdout parts: they are opened once each, in lesson 9. A development result is a clue, never
+  called proof.
 - Standard-library Python (plus `tzdata`). Tests: `python -m unittest discover -s tests -t .`

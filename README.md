@@ -55,9 +55,10 @@ setup in the notes, the lesson that covers it, and every number the bot had to c
    owner's action, by hand, in MetaTrader. No code or assistant in this project does it.
 2. **Closed candles only.** The bot never acts on a candle that is still forming.
 3. **No looking ahead.** Every decision uses only what was known at that moment. Tests enforce it.
-4. **Honest testing before trust.** Nobody knows yet whether these rules make money. Lesson 9
-   builds a test with its pass marks fixed before the data is seen, and its result is published
-   whatever it says.
+4. **Honest testing before trust.** Nobody knows yet whether these rules make money. Ideas are
+   tried and fixed on the first 13 months of history only ([research/](research/README.md)). The
+   last 12 months stay unseen until Lesson 9, which judges the bot on them with pass marks fixed
+   in advance, and publishes the result whatever it says.
 5. **No secrets in the repo.** Passwords, API keys and account numbers stay out of git.
 
 ## Running it
