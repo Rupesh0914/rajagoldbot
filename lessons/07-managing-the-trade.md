@@ -10,11 +10,11 @@ early, what happens to the stop, and when to simply close and go home.
 |---|---|
 | **Target** | Price reached the place where the profit is taken |
 | **Stop** | Price reached the stop |
-| **Time stop** | Hours have passed and nothing has happened, so the trade is closed |
+| **Time stop** | Hours have passed and nothing has happened, so the trade is closed (used by the quarters style only) |
 | **End of day** | It is 16:50 in New York. Everything is closed |
 
-There is no fifth way. The bot never holds overnight and never decides mid-trade that "this one
-is different".
+There is no fifth way. The bot never holds a trade through the daily market break, and never
+decides mid-trade that "this one is different".
 
 ## 2. The target
 
@@ -40,10 +40,11 @@ Target  3774.80    12.60 away, which is 1.5R
 all-or-nothing.
 
 **Halves.** Half is closed at the halfway point. The stop on the rest moves to the entry price,
-so the remainder can no longer lose. The rest is closed at the target. This is close to what
-Raja does in the videos.
+so the remainder should not lose (unless price jumps past the stop). The rest is closed at the
+target. This is our simple fixed version of Raja's partial closes, which vary from video to
+video.
 
-**Quarters.** This is the take-profit ladder from your first bot, Sugarwood Gold. A quarter of
+**Quarters.** This is based on the take-profit ladder from your first bot, Sugarwood Gold. A quarter of
 the position is closed at 25%, 50%, 75% and 100% of the way to the target. After each step the
 stop moves up behind it:
 
@@ -57,7 +58,8 @@ If no step is banked within 4 hours, the trade is closed.
 
 ## 4. The same trade, three endings
 
-Here is that trade under each style, for three things price might do:
+Here is that trade under each style, for three things price might do. To keep the sums clean
+this table uses a 100,000 account, where the position (0.59 lots) splits into even parts:
 
 | What price did | Single | Halves | Quarters |
 |---|---|---|---|
@@ -67,6 +69,14 @@ Here is that trade under each style, for three things price might do:
 
 ```
 python -m rajabot exits
+```
+
+On the 10,000 account from Lesson 6 the trade is 0.05 lots, which cannot be split evenly (see
+section 8). The numbers shift: straight to the target gives +1.05R for halves and +0.83R for
+quarters, and "60% then back" gives +0.45R and +0.44R. The pattern is the same.
+
+```
+python -m rajabot exits --balance 10000
 ```
 
 This table is the whole lesson. Read it twice.
@@ -90,8 +100,9 @@ What matters is the **average R per trade**: wins and losses added together, div
 number of trades. A style that wins 62% of the time with tiny winners can lose money. One that
 wins 40% of the time with big winners can make it.
 
-In the test of your first bot, 695 trades reached the first step 356 times and the final target
-only 62 times. Most of its "wins" were quarter-sized.
+In the test of your first bot (run on your PC on 25 November 2026, under its live settings), 695
+trades reached the first step 356 times and the final target only 62 times. Most of its "wins"
+were quarter-sized.
 
 ## 6. Moving the stop to break-even
 
@@ -102,9 +113,9 @@ right there, for nothing, on a trade that would have won.
 Whether the protection is worth the cost is not something to argue about. It is something to
 measure, and that is the next test.
 
-**One rule that is not up for testing:** the stop never moves **away** from the trade. Raja
-himself, reviewing one of his losing trades in the videos, says moving the stop was the mistake.
-The bot can only tighten a stop, never loosen it.
+**One rule that is not up for testing:** the stop never moves **away** from the trade. The bot
+can only tighten a stop, never loosen it. That is our rule. The notes record one of Raja's
+losing trades where moving the stop was criticised afterwards, without saying more.
 
 ## 7. Closing at the end of the day
 
@@ -144,14 +155,29 @@ first bot's notes warned about too.
 - **He exits early by judgement** when the chart stops looking right. The bot has no judgement.
   Its only early exits are the time stop and the end of the day.
 
-## 10. Which style is best?
+## 10. Which style is best? What our tests have said so far
 
-Not decided here. The table in section 4 shows the trade-off but not which side of it gold
-rewards. That depends on how often trades go all the way against how often they turn back, and
-only the history can say.
+The first whole-trade test on 13 months of your Eightcap history compared the styles with every
+other rule the same. Clues, not proof; details in `research/results`.
 
-The trade test (`research/trade_test.py`) runs all three styles on 13 months of real prices,
-with every other rule the same. Its result goes in `research/results`.
+On the large sample (every strong candle in New York hours, with the 4-hour direction):
+
+| Exit | Trades | Winners | Average R |
+|---|---|---|---|
+| Single target at twice the risk | 646 | 44% | +0.105 |
+| Quarters ladder | 838 | 64% | +0.019 |
+
+- **The ladder won far more often and made far less.** Winners went from 44% to 64%, and the
+  average fell by about four fifths. With the spread doubled the ladder went below zero.
+- Of 838 ladder trades, 332 banked nothing and only 74 reached the last step.
+- On the smaller level-break sample (115 trades) the three styles could not be told apart.
+  Halves was the weakest there.
+
+This is section 5 in real numbers: a high win rate, bought with the size of the winners.
+
+So the working exit is a **single target**. The ladder stays in the code and in this lesson,
+because it is the best way to see the trade-off, and because the question is not closed: this is
+one period of one market.
 
 ## What the bot piece does
 

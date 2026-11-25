@@ -5,9 +5,9 @@ chart: which way is gold going? The answer decides whether the bot looks for buy
 
 ## 1. Why direction comes first
 
-A level can break upward or downward. Breaks that go with the bigger move tend to have more
-behind them than breaks against it. So before looking at any level, decide the direction, and
-then only take trades that agree with it.
+A level can break upward or downward. Raja trades with the bigger direction: he decides which
+way gold is going first, and then only takes trades that agree with it. The idea is that a move
+going with the bigger picture has more behind it. Section 10 says what our tests made of that.
 
 - Direction up: look for **buys** only (a ceiling breaking).
 - Direction down: look for **sells** only (a floor breaking).
@@ -41,7 +41,8 @@ On the 4-hour chart, look at the last several candles and ask three things:
    early warning that it may be tiring.
 
 Then check the room: is a major daily or weekly level sitting just ahead? A move that is about
-to run into a wall has less space. That is Lesson 5.
+to run into a wall has less space. Lesson 5 is about room, though the bot only measures it
+against its own 30-minute levels. Daily and weekly walls are for your eye for now.
 
 ## 4. The bot's exact version
 
@@ -53,8 +54,8 @@ starts with:
 > Higher: direction is **up**. Lower: direction is **down**. Equal, or not enough candles yet:
 > **no trades**.
 
-Six 4-hour candles are 24 hours of trading. So the rule asks one plain question: **is gold
-higher or lower than it was a day ago?**
+Six 4-hour candles are one trading day. So the rule asks one plain question: **is gold higher
+or lower than it was a trading day ago?** (On a Monday that reaches back to Friday.)
 
 Example. The last seven 4-hour closes, oldest first:
 
@@ -121,8 +122,8 @@ The daily candles are the broker's: each runs from 17:00 to 17:00 New York time,
 | Daily | Higher or lower than a week ago? |
 
 When several readings are switched on, the bot trades only when **all of them agree**. Any
-disagreement means no trade. More readings switched on means fewer trades and, if the readings
-are any good, cleaner ones.
+disagreement means no trade. More readings switched on means fewer trades. Whether it means
+better ones is a question for the data, answered in section 10.
 
 Which readings to switch on is not chosen by feel. Lesson 9 tests the combinations and keeps the
 one that earns its place.
@@ -130,7 +131,8 @@ one that earns its place.
 ## 8. Be honest about these rules
 
 - **Raja gives no formula.** He reads direction by eye. These rules are our stand-ins, and the
-  numbers in them (six candles, five days, two peaks) are our choices, not his.
+  numbers in them (six candles, five days, the last two peaks and dips, found with two candles
+  each side) are our choices, not his.
 - **They are late at turns.** After a long climb, gold can fall for hours before a rule flips to
   down. Every direction rule has this cost.
 - **The closes rule flip-flops when gold goes sideways.** Up one candle, down the next. Sideways markets are
@@ -148,6 +150,24 @@ rule as Lesson 1.
 
 The 4-hour candles are the ones on your broker's chart: they close at 21:00, 01:00, 05:00,
 09:00, 13:00 and 17:00 New York time.
+
+## 10. What our tests have said so far
+
+Results on the first 13 months of your Eightcap history. Clues, not proof. Details are in
+`research/results`.
+
+- **The closes rule helped, a little.** Signals that agreed with it won 51.0%, signals against
+  it 48.1%. With the New York hours added, the lift was clearer, and trades taken without the
+  hours and direction filters lost money.
+- **Structure pointed the same way**, about as weakly (51.5% agreeing, 47.2% against).
+- **The daily background added nothing** (49.7% agreeing, 49.9% against).
+- **All three together was no better** than the closes rule alone (48.8%, on few signals).
+
+So the working setup uses the closes rule only. Structure and the daily background are built and
+switched off.
+
+One caution. Gold rose strongly through this whole period. "Trade with the direction" may partly
+have been "buy a rising market". That is being checked.
 
 ## What the bot piece does
 

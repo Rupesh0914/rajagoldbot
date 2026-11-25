@@ -11,8 +11,8 @@ The trade has 4 dollars of space before it meets the next place where sellers ar
 the idea is wrong, it loses 8. Risking 8 to make 4, with a wall in the way, is a bad trade even
 when the break is real.
 
-Raja checks this on every trade: before entering, he looks for clean space to the next obstacle.
-If a nearby zone blocks the move, he skips it.
+Raja checks for clean space before entering: he looks for the next obstacle, and if a nearby
+zone blocks the move, he skips the trade.
 
 ## 2. The three measurements
 
@@ -44,7 +44,7 @@ yardstick.
 
 > **Room divided by risk must be at least 1.**
 
-In the picture: 13 divided by 8 is 1.62. There is more room than risk, so the trade passes.
+In the picture: 13 divided by 8 is about 1.6. There is more room than risk, so the trade passes.
 
 Asking for at least as much room as risk is the loosest sensible rule. The candidates are 1.0,
 1.5 and 2.0, from your research notes. A stricter number means fewer trades, each with more
@@ -52,11 +52,13 @@ space. Lesson 9 decides which one the bot uses.
 
 ## 4. Three examples
 
-All three have the same signal: a candle closing at 3762 through the ceiling at 3761.
+All three are a candle closing at 3762 through a ceiling at 3761. The first two are the same
+signal candle with a different ceiling above it. The third is a different morning (from Lesson
+2), which is why its risk is 7 and not 8.
 
 | | Next ceiling | Room | Risk | Room ÷ risk | Verdict |
 |---|---|---|---|---|---|
-| Room | 3775 | 13 | 8 | 1.62 | Passes |
+| Room | 3775 | 13 | 8 | about 1.6 | Passes |
 | Tight | 3766 | 4 | 8 | 0.50 | Skipped: not enough room |
 | Open | none | | 7 | | Passes: open space |
 
@@ -101,23 +103,39 @@ small signal candle (risk 4), and not enough after a big one (risk 14).
 A big signal candle means a far stop, and a far stop needs a lot of room to be worth taking.
 The room rule handles that case by case, without banning big candles outright.
 
-## 7. What this lesson is for, honestly
+## 7. What our tests have said so far
 
-The checks in `research/results` found that breaking a level, by itself, did not predict where
-gold went next. This lesson is the first place where levels do a second job: they mark where
-the trade is likely to stall. If levels are worth anything to this bot, it is probably here and
-in Lesson 6, where they place the stop and the target.
+This lesson was written hoping that levels would prove their worth as walls. The first whole-trade
+test on 13 months of your Eightcap history said otherwise. Clues, not proof; details in
+`research/results`.
 
-That is a claim to test, not a fact. Once Lesson 6 is built, the data check becomes a real trade
-test and this rule is switched on and off like the others.
+| Setup | Trades | Average R |
+|---|---|---|
+| Room rule at 1.0, target at the next level | 115 | +0.083 |
+| Room rule at 1.5 | 95 | +0.054 |
+| Room rule at 2.0 | 86 | +0.057 |
+| No room rule, always aim at twice the risk | 163 | +0.140 |
+
+- **The room rule did not help.** It removed trades without improving the ones left, and making
+  it stricter made the result worse, not better.
+- **Aiming at the next level did worse than a plain target** of twice the risk.
+
+None of these is clearly different from the others, the groups are small. But nothing here
+supports the idea that our 30-minute levels mark where a trade will stall. So the room rule and
+level targets are **switched off** in the working setup. They stay in the code as options under
+test.
+
+Why keep the lesson? Because the idea is central to how Raja trades, and you need to understand
+it to judge it. It may be that his eye picks better walls than our swing rule does (see the next
+section). What the test shows is that **our version** of the idea has not earned its place.
 
 ## 8. What Raja does differently
 
 - **He measures by eye.** He talks about distances in pips for a particular chart on a
   particular day. He gives no fixed minimum. The ratio against risk is our way of writing down
   "enough for this trade".
-- **He counts more things as walls.** A long wick, a round number, a level from the daily chart:
-  all can be obstacles to him. The bot counts only its own swing levels on the 30-minute chart.
+- **He counts more things as walls.** A long wick, or a level from a higher timeframe, can be an
+  obstacle to him. The bot counts only its own swing levels on the 30-minute chart.
   Walls from the 4-hour and daily charts are a candidate to add later.
 
 ## What the bot piece does

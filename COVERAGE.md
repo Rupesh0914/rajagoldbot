@@ -70,8 +70,8 @@ turned into something measured. This table tracks how far that has got.
 | A rejection wick warning that a move is tiring | Wick against the move, measured against the body | 8 | Planned |
 | "This one just looks wrong" | Nothing. Some judgement cannot be written as a rule | | See below |
 
-Every option is switched on or off by the honest test in Lesson 9, on two years of history, not
-by opinion. Once the bot can produce trades, the owner reviews about 50 chart pictures drawn at
+Every option is tried on the first 13 months of history (`research/results`) and then judged in
+Lesson 9 on the 12 months held back, not by opinion. Once the bot can produce trades, the owner reviews about 50 chart pictures drawn at
 random from that history in one sitting, as a check that the bot's trades look like trades a
 person would take.
 

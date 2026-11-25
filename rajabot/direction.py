@@ -2,7 +2,7 @@
 
 The rule: compare the close of the last closed 4-hour candle with the close `lookback` candles
 earlier. Higher means up, lower means down. With the default of 6 candles that asks one plain
-question: is gold higher or lower than it was 24 trading hours ago?
+question: is gold higher or lower than it was one trading day ago?
 
   * up:   the bot may look for buys only
   * down: the bot may look for sells only
@@ -29,7 +29,7 @@ from .levels import HIGH, LOW, find_swings
 
 UP, DOWN, FLAT, MIXED, UNKNOWN = "up", "down", "flat", "mixed", "unknown"
 BUY, SELL = "buy", "sell"
-DEFAULT_LOOKBACK = 6        # 4-hour candles: 24 hours of trading
+DEFAULT_LOOKBACK = 6        # 4-hour candles: one trading day
 DAILY_LOOKBACK = 5          # daily candles: one trading week
 STRUCTURE_STRENGTH = 2      # candles each side for a peak or dip on the 4-hour chart
 

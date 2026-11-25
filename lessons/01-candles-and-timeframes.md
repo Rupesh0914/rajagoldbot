@@ -36,22 +36,27 @@ A candle is a summary of what price did during one stretch of time. It records f
 Two candles can cover the same distance and mean opposite things.
 
 **Mostly body.** Open 3750, high 3758, low 3748, close 3756. The candle is 10 dollars tall and
-6 of that is body. Buyers pushed up and held most of it. This is conviction.
+6 of that is body. Buyers pushed up and held most of it. Traders call this a conviction candle.
 
 **Mostly wick.** Open 3756, high 3760, low 3740, close 3755. The candle is 20 dollars tall but
 the body is only 1. Sellers drove price down 16 dollars and lost nearly all of it by the close.
 This is rejection: the low was tested and refused.
 
-This strategy wants **conviction candles** when price breaks a level. A candle that pokes through
-a level and closes as mostly wick has not broken anything. Lesson 4 turns this into an exact rule
-(how much of the candle must be body).
+This strategy asks for a candle that is at least half body when price breaks a level. A candle
+that pokes through a level and closes as mostly wick has not broken anything. Lesson 4 turns this
+into an exact rule.
+
+A caution from our own tests: "more body is better" turned out not to be true. On 13 months of
+gold, breakout candles that were almost all body did slightly worse afterwards than ordinary
+ones. So the body rule is a minimum that screens out wick-heavy candles, and nothing more.
 
 ## 3. Timeframes
 
 The timeframe is how long each candle lasts. The same price movement can be drawn as 1-minute,
 30-minute or 4-hour candles. One 30-minute candle is thirty 1-minute candles squeezed into one.
 
-This strategy uses two timeframes, each for one job:
+This strategy starts with two timeframes, each for one job (Lesson 3 adds the daily chart as an
+optional third):
 
 | Timeframe | Job |
 |---|---|
@@ -59,7 +64,7 @@ This strategy uses two timeframes, each for one job:
 | **30-minute** | The decision: did a candle close through a level? (Lesson 4) |
 
 Small timeframes are noisy. A move that looks dramatic on a 1-minute chart is often a single
-wick on the 30-minute chart. Deciding on the 30-minute keeps the bot out of most of that noise.
+wick on the 30-minute chart. Deciding on the 30-minute is meant to keep the bot out of that noise.
 
 ## 4. The rule that matters most: wait for the close
 
@@ -67,12 +72,18 @@ A candle that is still forming can look like a strong breakout at minute 20 and 
 at minute 30. Until it closes, it has told you nothing final.
 
 So the rule, for you and for the bot: **only a closed candle counts.** Acting on a forming candle
-is the most common way to get caught in a fake breakout.
+is a common way to get caught in a fake breakout.
+
+Raja does not always wait. In some videos he enters before the candle closes, and treats that as
+the riskier choice. The bot always waits. The early entry is Lesson 14.
 
 ## 5. The broker's clock
 
-MetaTrader shows candles in the broker's time, not yours. Most gold brokers, Eightcap included,
-run their clock 7 hours ahead of New York. That makes the broker's midnight fall at 17:00 New
+MetaTrader shows candles in the broker's time, not yours. Many brokers, and Eightcap as far as
+we have seen, run their clock 7 hours ahead of New York all year. Your first bot used the same
+assumption and its replay matched its real trades. Lesson 10 checks it again against your
+MetaTrader, because a broker that changes its clocks on European dates would be an hour off for
+about three weeks a year. That makes the broker's midnight fall at 17:00 New
 York time, which is when the gold market takes its daily one-hour break.
 
 It matters for the 4-hour chart: the broker's 4-hour candles start at 17:00, 21:00, 01:00, 05:00,

@@ -19,7 +19,9 @@ has failed. So:
 - **Sell:** the stop goes just **above the high** of the signal candle.
 
 "Just beyond" means a small buffer, so that price touching the exact low by a cent does not take
-you out. The bot uses one spread as the buffer.
+you out. The bot uses one spread as the buffer. That is our choice. Your research notes proposed
+smaller ones (0, 2 or 5 of the smallest price steps), and the buffer is on the list of things
+still to test.
 
 The mistake to avoid: choosing the stop by how much you want to lose ("I'll put it 3 dollars
 away because that's all I can afford"). The market does not know what you can afford. The stop
@@ -91,8 +93,11 @@ python -m rajabot size 50 8.4
 ```
 
 Notice what this does. A far stop gives a small trade. A near stop gives a bigger trade. Either
-way the loss is about the same amount of money. Every losing trade costs the same, so no single
-trade can do real damage.
+way the loss is about the same amount of money, and never more than the share you chose.
+
+Two honest limits. Rounding down means the loss is often a little less than the target (0.42%
+here, not 0.50%). And if price jumps straight past the stop, as it can around news, the loss is
+bigger than planned. No stop can prevent that.
 
 ## 4. Your account is not in US dollars
 
@@ -148,7 +153,7 @@ python -m rajabot plan --balance 500
 | Cost | What it is | On your account |
 |---|---|---|
 | **Spread** | Ask minus bid, paid on every trade | About 0.13, median over the 13 months tested. Wider at night and around news |
-| **Commission** | A fee per lot, on some account types | None. Measured from 152 of your own demo trades |
+| **Commission** | A fee per lot, on some account types | None. Measured from 152 trades on your demo account when its history was pulled on 23 November 2026 |
 | **Swap** | A charge for holding a trade overnight | Not paid: the bot will close everything before the daily break (Lesson 7) |
 | **Slippage** | Getting a worse price than asked, mostly on stops in fast markets | Real and unpredictable. Tests allow for it by also running with the spread doubled |
 
@@ -177,7 +182,7 @@ and the broker's facts about gold. It returns a plan (entry, stop, lots, and the
 or the reason there is no trade.
 
 Its tests check that the risk never exceeds the share chosen, for any balance or stop distance,
-and that being stopped out is always exactly -1R.
+and that being stopped out at the stop price is exactly -1R.
 
 ## Check yourself
 

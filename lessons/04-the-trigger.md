@@ -14,6 +14,8 @@ says: "this is a signal".
 This is the setup the notes call break-and-close continuation: price has been held by a level,
 it finally gets through, and the bet is that it keeps going.
 
+That is the bet. Section 11 says how it has done so far on real prices: on its own, not well.
+
 ## 2. The four checks
 
 When a 30-minute candle closes, the bot asks, in this order:
@@ -26,6 +28,10 @@ When a 30-minute candle closes, the bot asks, in this order:
 | 4 | Is the **level good enough**? (the level-quality option from Lesson 2) | Skipped: "weak level" |
 
 All four pass: a signal.
+
+(The code has one more guard: if a single candle somehow closed above a ceiling and below a floor
+at once, it gives no side and skips. With levels built the way Lesson 2 builds them this should
+not happen, so it is a safety net and not a fifth rule to learn.)
 
 ## 3. Check 1: a close, not a poke
 
@@ -43,8 +49,9 @@ The ceiling is at 3761. A candle spikes to 3764 and closes at 3760.
 Buyers pushed through and could not hold it. That is not a break. It is the level doing its job.
 The bot does nothing, and the ceiling stays on the map.
 
-Many traders buy the moment price pokes above a level and are caught when it falls back. Waiting
-for the close costs a slightly worse price and avoids most of those traps.
+Traders who buy the moment price pokes above a level can be caught when it falls back. Waiting
+for the close costs a slightly worse price and is meant to avoid that. How many traps it avoids
+is something we have not measured.
 
 ## 4. Check 2: is the candle convincing?
 
@@ -65,8 +72,11 @@ The second candle went all the way to 3768 and was sold back to 3761.5. It close
 ceiling by 50 cents, with a long upper wick. Sellers were waiting up there. Raja favours candles
 that are mostly body over candles with long wicks, though he gives no exact figure.
 
-**"At least half" is our number.** The candidates are 50%, 65% and 80%, taken from your research
-notes. Lesson 9 decides which one the bot uses.
+**"At least half" is our number.** The candidates were 50%, 65% and 80%, taken from your research
+notes. The first test went against the stricter ones: candles over 80% body won 47.7% of the
+time afterwards, against 52.3% for candles of 50% to 65% body. A very full candle may mean the
+move is already spent by the time it closes. So the rule stays at 50%, as a minimum that screens
+out wick-heavy candles. It is not a claim that fuller is better.
 
 **What happens to the level after a skipped break?** It is used up. Price did close through it,
 so it is no longer a ceiling. The bot does not wait around for a second chance at the same
@@ -83,10 +93,10 @@ often just a bounce, and the bot leaves it alone.
 ## 6. Check 4: level quality (optional)
 
 From Lesson 2, section 8: the bot can count how many times price has turned at a level. With
-this option switched on, a break only counts if price had turned there at least twice. A level
-that held twice has more traders watching it, so getting through it should mean more.
+this option switched on, a break only counts if price had turned there at least twice. The usual
+reasoning is that a level that held twice has more traders watching it.
 
-Whether this helps is for Lesson 9 to decide. It starts switched off.
+It is switched off. In our tests it added nothing once the hours and direction filters were on.
 
 ## 7. One candle, two levels
 
@@ -122,6 +132,22 @@ matters more than it sounds:
   the close. The early version is Lesson 14 and gets its own test.
 - **He judges the candle by eye.** "Strong candle" has no number in the videos. The body share is
   our measure of it.
+
+## 11. What our tests have said so far
+
+Results on the first 13 months of your Eightcap history. Clues, not proof. Details are in
+`research/results`.
+
+- **A level break on its own was a coin flip:** 50.0% over 784 signals.
+- **Any strong candle did as well, with no level at all.** With the New York hours and the
+  4-hour direction added, level breaks won 54.2% and plain strong candles 53.2%, on six times as
+  many signals.
+- **In whole trades the plain strong candle did best.** Stop behind the candle, target at twice
+  the risk: +0.105 R a trade over 646 trades, the only setup clearly above zero.
+
+So the honest position is: the hours and the direction are doing the work, and the level break
+has not yet shown that it adds anything. It stays in the bot as an option under test. The
+working setup is the plain strong candle in the right hours and direction.
 
 ## What the bot piece does
 

@@ -11,9 +11,13 @@ A level is a price where gold turned around before.
   resistance).
 - Price fell, hit a price, and bounced. That price is a **floor** (traders call it support).
 
-Why it matters: many traders watch the same turning points. Orders pile up around them. So when
-price comes back, something tends to happen there. Either it turns again, or it pushes through
-with force. This strategy trades the second case: the push through. That is Lesson 4.
+Why traders care: the usual explanation is that many people watch the same turning points and
+place orders around them, so something tends to happen when price comes back. Either it turns
+again, or it pushes through. This strategy trades the second case: the push through. That is
+Lesson 4.
+
+That explanation is trading lore, not something we have measured. Our own tests so far (section
+9) did not find that these levels predict where gold goes next.
 
 ## 2. Swing highs and swing lows
 
@@ -53,7 +57,7 @@ This is the most important idea in this lesson.
 
 Look at any finished chart and the swing highs are obvious. But at the moment a high is made,
 nobody knows it is a swing high. The next candle might go higher. You only know once the candles
-**after** it have closed lower.
+**after** it have closed with lower highs.
 
 So with strength 2 on 30-minute candles, a swing high is confirmed one hour after the candle
 that made it closed. With strength 8, four hours after.
@@ -81,20 +85,22 @@ because price rarely turns at the exact same cent twice.
 
 The bot needs one exact number, so it uses the wick tip. Because only a candle **close** beyond
 that price counts as a break, small pokes around the line are ignored anyway. The close rule
-does the job the shaded zone does by eye.
+does part of the job the shaded zone does by eye. Not all of it: a close one cent beyond the line
+still counts as a break, where a zone would shrug it off.
 
 ## 6. How Raja describes it, and how that matches
 
 Raja's own description of fresh support is simple: a down candle followed by an up candle. Price
-was falling, then it turned. The low between those two candles is the support. Resistance is the
-reverse: an up candle followed by a down candle, and the high between them.
+was falling, then it turned. Resistance is the reverse: an up candle followed by a down candle.
+The notes record no more detail than that. Taking the low between the two candles as the support
+price is our reading.
 
-That is the same idea as a swing low and a swing high. The swing rule in section 2 only adds an
-exact test, so that the bot and you would mark the same price every time. A strength of 1 is
-closest to his words. Higher strengths keep only the turns that held for longer.
+That is a similar idea to a swing low and a swing high, but not the same test. His looks at the
+colour of two candles. Ours compares the highs or lows of several candles and ignores colour. We
+use ours because it gives one exact price that the bot and you would both mark.
 
-He also says to look at the candles to the left: has price turned at this same area before? A
-price that turned gold more than once deserves more respect than one that did it once.
+He also says to look at the candles to the left: has price turned at this same area before?
+Section 8 turns that into a count.
 
 ## 7. Worked example
 
@@ -132,7 +138,7 @@ the floor.
 ## 8. Level quality: how many times has price turned here?
 
 Your eye sees this at a glance: some levels are a single turn, and some are an area where gold
-has turned again and again. The second kind is the one everybody is watching.
+has turned again and again. Traders usually treat the second kind as the stronger level.
 
 The bot measures it with a count:
 
@@ -155,8 +161,21 @@ at 3760, and falls again. Now there are two ceilings a dollar apart, and each sc
 python -m rajabot levels --example twice
 ```
 
-What the bot does with the count is not decided yet. One option is to trade only breaks of
-levels that score 2 or more. Lesson 9 tests the bot with that option on and off.
+What the bot does with the count: one option is to trade only breaks of levels that score 2 or
+more. It is built, and switched off, for the reason in the next section.
+
+## 9. What our tests have said so far
+
+These are results on the first 13 months of your Eightcap history. They are clues, not proof,
+and the details are in `research/results`.
+
+- **A level break by itself was a coin flip.** After 784 breaks, price went one average candle
+  our way first exactly 50.0% of the time. Any strong candle with no level at all did as well.
+- **Level quality looked promising alone and then did not hold.** Levels that had turned price
+  three or more times won 53.3% against 46.6% for single turns. But once the hours and direction
+  filters were added, requiring a better level added nothing.
+- So for now the level-quality option stays off. Swing levels remain in the bot as something
+  still being tested, not as something shown to work.
 
 ## What the bot piece does
 
