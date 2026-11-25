@@ -83,7 +83,20 @@ The bot needs one exact number, so it uses the wick tip. Because only a candle *
 that price counts as a break, small pokes around the line are ignored anyway. The close rule
 does the job the shaded zone does by eye.
 
-## 6. Worked example
+## 6. How Raja describes it, and how that matches
+
+Raja's own description of fresh support is simple: a down candle followed by an up candle. Price
+was falling, then it turned. The low between those two candles is the support. Resistance is the
+reverse: an up candle followed by a down candle, and the high between them.
+
+That is the same idea as a swing low and a swing high. The swing rule in section 2 only adds an
+exact test, so that the bot and you would mark the same price every time. A strength of 1 is
+closest to his words. Higher strengths keep only the turns that held for longer.
+
+He also says to look at the candles to the left: has price turned at this same area before? A
+price that turned gold more than once deserves more respect than one that did it once.
+
+## 7. Worked example
 
 Ten 30-minute candles on a morning in New York. Strength 2.
 

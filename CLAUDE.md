@@ -5,6 +5,9 @@ Guidance for any assistant working in this repo.
 - The owner is learning the strategy while the bot is built. Every new bot piece ships with a
   lesson in `lessons/` written in plain English, a "check yourself" quiz, and tests. Follow the
   roadmap in `README.md` in order; do not build ahead of the lessons.
+- `COVERAGE.md` maps every rule and setup in the owner's research notes to a lesson, and lists
+  every number the bot had to choose. Update it with each lesson. A number the notes do not give
+  is recorded there as our choice, never presented as a Raja Banks rule.
 - Explain in plain English. No jargon without a one-line definition.
 - Demo account only. Never switch anything to a real-money account or enter a real account
   number: that is the owner's action, by hand, in MetaTrader.

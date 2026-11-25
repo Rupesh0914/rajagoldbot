@@ -43,5 +43,17 @@ class LevelsCommand(unittest.TestCase):
             run("levels", "--strength", "0")
 
 
+class DirectionCommand(unittest.TestCase):
+    def test_the_lesson_three_examples(self):
+        self.assertEqual(run("direction", "3700", "3710", "3705", "3720", "3730", "3725", "3740"),
+                         "up: the last close 3740.00 is above 3700.00, the close 6 candles earlier. Look for buys only.")
+        self.assertIn("Look for sells only", run("direction", "3740", "3730", "3735", "3720", "3710", "3715", "3700"))
+        self.assertIn("unknown", run("direction", "3700", "3710"))
+
+    def test_lookback_below_one_is_refused(self):
+        with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+            run("direction", "3700", "3710", "--lookback", "0")
+
+
 if __name__ == "__main__":
     unittest.main()

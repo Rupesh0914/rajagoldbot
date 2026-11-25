@@ -72,6 +72,13 @@ class ThirtyMinuteCandles(unittest.TestCase):
         self.assertEqual(candles[0].time, utc(2026, 11, 10, 14, 0))    # sits on :00, not on the first bar
         self.assertEqual(candles[0].close, 3750.0)
 
+    def test_the_last_candle_counts_once_the_clock_says_it_has_closed(self):
+        start = utc(2026, 11, 10, 14, 0)
+        bars = minute_bars(start, [3750.0] * 30)                   # exactly one half hour, nothing after
+        self.assertEqual(build_candles(bars, 30), [])
+        self.assertEqual(build_candles(bars, 30, as_of=start + 1799), [])
+        self.assertEqual(len(build_candles(bars, 30, as_of=start + 1800)), 1)
+
     def test_bars_out_of_order_are_refused(self):
         bars = minute_bars(utc(2026, 11, 10, 14, 0), [3750.0, 3751.0])
         with self.assertRaises(ValueError):
@@ -99,6 +106,22 @@ class FourHourCandles(unittest.TestCase):
         # in summer the same candle starts an hour earlier in UTC, because New York's clock moved
         summer = build_four_hour_candles(minute_bars(utc(2026, 7, 13, 21, 0), [3750.0] * (5 * 60)))
         self.assertEqual(summer[0].time, utc(2026, 7, 13, 21, 0))
+
+    def test_a_block_whose_first_minutes_are_missing_still_sits_on_the_brokers_clock(self):
+        # The daily break ends an hour into the broker's first block of the day.
+        block_start = utc(2026, 1, 12, 22, 0)                      # broker midnight
+        bars = minute_bars(block_start + 3600, [3750.0] * (4 * 60))    # first bar an hour late, runs 4 hours
+        candles = build_four_hour_candles(bars)
+        self.assertEqual(len(candles), 1)
+        self.assertEqual(candles[0].time, block_start)
+        self.assertEqual(candles[0].close_time, block_start + 4 * 3600)
+
+    def test_the_last_four_hour_candle_counts_once_the_clock_is_in_the_next_block(self):
+        start = utc(2026, 1, 12, 22, 0)
+        bars = minute_bars(start, [3750.0] * (4 * 60))             # exactly one block, nothing after
+        self.assertEqual(build_four_hour_candles(bars), [])
+        self.assertEqual(build_four_hour_candles(bars, as_of=start + 4 * 3600 - 1), [])
+        self.assertEqual(len(build_four_hour_candles(bars, as_of=start + 4 * 3600)), 1)
 
     def test_four_hour_candles_never_change_when_later_bars_arrive(self):
         bars = minute_bars(utc(2026, 1, 12, 22, 0), [3750.0 + (i % 11) * 0.3 for i in range(14 * 60)])

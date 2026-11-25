@@ -19,19 +19,35 @@ share of the account, and be out by the end of the New York day.
 
 ## Roadmap
 
+**Part 1: the core bot.** One setup, built completely and tested honestly.
+
 | # | Lesson | Bot piece | Status |
 |---|---|---|---|
 | 1 | [Candles and timeframes](lessons/01-candles-and-timeframes.md) | `rajabot/candles.py` | Done |
 | 2 | [Levels: where price turned before](lessons/02-levels.md) | `rajabot/levels.py` | Done |
-| 3 | Direction: reading the 4-hour chart | `rajabot/direction.py` | Next |
-| 4 | The trigger: a 30-minute close through a level | `rajabot/trigger.py` | |
+| 3 | [Direction: reading the 4-hour chart](lessons/03-direction.md) | `rajabot/direction.py` | Done |
+| 4 | The trigger: a 30-minute close through a level | `rajabot/trigger.py` | Next |
 | 5 | Room to run: is there open space ahead? | `rajabot/space.py` | |
-| 6 | Stop loss and how much to risk | `rajabot/risk.py` | |
-| 7 | Managing the trade and going flat | `rajabot/manage.py` | |
-| 8 | When not to trade: hours, news, wide spreads | `rajabot/filters.py` | |
+| 6 | Stop loss, costs and how much to risk | `rajabot/risk.py` | |
+| 7 | Managing the trade: partial closes, break-even, going flat | `rajabot/manage.py` | |
+| 8 | When not to trade: sideways markets, hours, news, daily safety limits | `rajabot/filters.py` | |
 | 9 | Honest testing: a backtest that cannot fool us | `rajabot/backtest/` | |
 | 10 | Connecting to MetaTrader 5 on a demo account | `mt5/` | |
 | 11 | Watching it: journal and daily report | `rajabot/journal.py` | |
+
+**Part 2: the other setups in the notes.** Each is taught, and joins the bot only if its own
+honest test passes.
+
+| # | Lesson | Plan |
+|---|---|---|
+| 12 | Retest entries: buying a bounce off support, selling a bounce into resistance | Taught, then tested |
+| 13 | Wick fills | Taught, then tested |
+| 14 | Earlier entries on the 15-minute chart | Taught; riskier, tested separately |
+| 15 | Exhaustion wicks and reversals | Taught only |
+| 16 | News days and the jobs-report tactic | Taught only, not automated |
+
+[COVERAGE.md](COVERAGE.md) checks this plan against the owner's research notes: every rule and
+setup in the notes, the lesson that covers it, and every number the bot had to choose.
 
 ## Ground rules
 
@@ -58,4 +74,5 @@ Try the pieces built so far:
 ```
 python -m rajabot candle 3750 3758 3748 3756     # lesson 1: read one candle
 python -m rajabot levels                         # lesson 2: watch levels appear and break
+python -m rajabot direction 3700 3710 3705 3720 3730 3725 3740    # lesson 3: which way?
 ```

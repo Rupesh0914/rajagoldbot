@@ -5,6 +5,7 @@ import argparse
 from datetime import datetime, timezone
 
 from .candles import NEW_YORK, Candle, describe
+from .direction import DEFAULT_LOOKBACK, explain
 from .examples import LESSON_2
 from .levels import LevelBook
 
@@ -45,6 +46,10 @@ def main(argv: list[str] | None = None) -> int:
     levels = commands.add_parser("levels", help="Lesson 2: watch levels appear and break in the lesson's example")
     levels.add_argument("--strength", type=int, default=2,
                         help="candles needed on each side of a swing (the lesson's example uses 2)")
+    direction = commands.add_parser("direction", help="Lesson 3: which way, from 4-hour closing prices (oldest first)")
+    direction.add_argument("closes", type=float, nargs="+", help="closing prices of closed 4-hour candles, oldest first")
+    direction.add_argument("--lookback", type=int, default=DEFAULT_LOOKBACK,
+                           help="how many candles back to compare with (default %d)" % DEFAULT_LOOKBACK)
     args = parser.parse_args(argv)
 
     if args.command == "candle":
@@ -55,6 +60,10 @@ def main(argv: list[str] | None = None) -> int:
         if args.strength < 1:
             parser.error("strength must be 1 or more")
         print("\n".join(levels_story(LESSON_2, args.strength)))
+    elif args.command == "direction":
+        if args.lookback < 1:
+            parser.error("lookback must be 1 or more")
+        print(explain(args.closes, args.lookback))
     return 0
 
 

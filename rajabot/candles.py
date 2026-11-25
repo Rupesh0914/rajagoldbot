@@ -80,12 +80,13 @@ class Candle:
         return self.body / self.range if self.range > 0 else 0.0
 
 
-def build_candles(bars: Iterable[Bar], minutes: int) -> list[Candle]:
+def build_candles(bars: Iterable[Bar], minutes: int, as_of: int | None = None) -> list[Candle]:
     """Turn one-minute bars into CLOSED candles of `minutes` length, oldest first.
 
     Bars are grouped by clock time (a 30-minute candle runs from :00 to :30 or :30 to :00). A
-    stretch with no bars has no candle. The last group is left out unless a later bar proves it has
-    closed, because a candle that is still forming must never be used.
+    stretch with no bars has no candle. The last group is left out unless it is known to have
+    closed, because a candle that is still forming must never be used. It is known to have closed
+    when a later bar exists, or when `as_of` (the current time, UTC seconds) is at or past its end.
     """
     if minutes <= 0:
         raise ValueError("minutes must be positive")
@@ -107,6 +108,8 @@ def build_candles(bars: Iterable[Bar], minutes: int) -> list[Candle]:
             forming[2] = max(forming[2], bar.high)
             forming[3] = min(forming[3], bar.low)
             forming[4] = bar.close
+    if forming is not None and as_of is not None and forming[0] + seconds <= as_of:
+        candles.append(Candle(forming[0], forming[1], forming[2], forming[3], forming[4], seconds))
     return candles
 
 
@@ -121,29 +124,34 @@ def server_seconds(utc_seconds: int) -> int:
     return calendar.timegm(local.replace(tzinfo=None).timetuple()) + SERVER_AHEAD_OF_NEW_YORK
 
 
-def build_four_hour_candles(bars: Iterable[Bar]) -> list[Candle]:
+def build_four_hour_candles(bars: Iterable[Bar], as_of: int | None = None) -> list[Candle]:
     """CLOSED 4-hour candles as the broker's own chart draws them (blocks of the broker's clock).
 
-    A candle's `time` is the UTC time of its first bar. The last block is left out unless a later
-    bar proves it has closed.
+    A candle's `time` is the start of its 4-hour block, even when the block's first minutes had no
+    bars (the block after the daily break starts an hour late). The last block is left out unless
+    it is known to have closed: a later bar exists, or `as_of` (the current time, UTC seconds) is
+    in a later block.
     """
     candles: list[Candle] = []
-    forming: list | None = None                      # [block, first bar time, open, high, low, close]
+    forming: list | None = None                      # [block, block start, open, high, low, close]
     previous = None
     for bar in bars:
         if previous is not None and bar.time <= previous:
             raise ValueError("bars must be in time order with no repeats (at %d)" % bar.time)
         previous = bar.time
-        block = server_seconds(bar.time) // FOUR_HOURS
+        on_server = server_seconds(bar.time)
+        block = on_server // FOUR_HOURS
         if forming is not None and forming[0] != block:
             candles.append(Candle(forming[1], forming[2], forming[3], forming[4], forming[5], FOUR_HOURS))
             forming = None
         if forming is None:
-            forming = [block, bar.time, bar.open, bar.high, bar.low, bar.close]
+            forming = [block, bar.time - on_server % FOUR_HOURS, bar.open, bar.high, bar.low, bar.close]
         else:
             forming[3] = max(forming[3], bar.high)
             forming[4] = min(forming[4], bar.low)
             forming[5] = bar.close
+    if forming is not None and as_of is not None and server_seconds(as_of) // FOUR_HOURS > forming[0]:
+        candles.append(Candle(forming[1], forming[2], forming[3], forming[4], forming[5], FOUR_HOURS))
     return candles
 
 
