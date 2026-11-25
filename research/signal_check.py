@@ -169,11 +169,11 @@ def session_of(utc_seconds: int) -> str:
     return "17-24 New York (evening)"
 
 
-def in_session(utc_seconds: int) -> bool:
-    """Monday to Friday, 07:00 to 16:00 New York time (both ends included)."""
+def in_session(utc_seconds: int, hours: tuple[int, int] = SESSION_HOURS) -> bool:
+    """Monday to Friday, 07:00 to 16:00 New York time by default (both ends included)."""
     local = datetime.fromtimestamp(utc_seconds, timezone.utc).astimezone(NEW_YORK)
     minutes = local.hour * 60 + local.minute
-    return local.weekday() < 5 and SESSION_HOURS[0] * 60 <= minutes <= SESSION_HOURS[1] * 60
+    return local.weekday() < 5 and hours[0] * 60 <= minutes <= hours[1] * 60
 
 
 def run_variant(bars, times, candles, readings: Readings, settings: dict) -> dict:

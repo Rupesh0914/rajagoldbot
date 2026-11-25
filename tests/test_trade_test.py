@@ -2,7 +2,7 @@
 import unittest
 
 from research.signal_check import DEVELOPMENT_ENDS
-from research.trade_test import BASE, BENCHMARKS, SETUPS, check, summarise
+from research.trade_test import BASE, BENCHMARK, BENCHMARKS, HINDSIGHT, SETUPS, TARGETS, check, summarise
 from tests.test_signal_check import random_walk
 
 
@@ -24,11 +24,14 @@ class TheTest(unittest.TestCase):
         cls.text, cls.data = check(random_walk(120, seed=3))
 
     def test_every_setup_is_reported(self):
-        for setup in SETUPS + BENCHMARKS:
+        for setup in SETUPS + BENCHMARKS + TARGETS + HINDSIGHT:
             self.assertIn(setup.name, self.data["setups"])
             self.assertIn("| %s |" % setup.name, self.text)
-        for heading in ("## The setups", "## How the trades ended", "## How far the ladders got",
-                        "## Inside the base setup", "## Signals the base setup did not trade", "## What this cannot say"):
+        for heading in ("## One change at a time", "## The benchmarks", "## Where to take profit",
+                        "## Suggested by earlier runs (hindsight)", "## How the trades ended",
+                        "## How far the ladders got", "## Inside: " + BENCHMARK.name, "## Inside: " + BASE.name,
+                        "### Did the signal candle also break a level?",
+                        "## Signals the base setup did not trade", "## What this cannot say"):
             self.assertIn(heading, self.text)
 
     def test_random_prices_give_no_edge(self):
@@ -44,6 +47,11 @@ class TheTest(unittest.TestCase):
         unfiltered = self.data["setups"]["No hours or direction filter"]
         self.assertGreater(unfiltered["trades"], base["trades"])
         self.assertNotIn("outside_session", unfiltered["skips"])
+
+    def test_a_nearer_target_wins_more_often_and_a_shorter_session_trades_less(self):
+        setups = self.data["setups"]
+        self.assertGreater(setups["Benchmark, target 1R"]["win_share"], setups["Benchmark, target 3R"]["win_share"])
+        self.assertLess(setups["Benchmark, entries 07:00 to 13:00 only"]["trades"], setups[BENCHMARK.name]["trades"])
 
     def test_it_refuses_history_past_the_development_part(self):
         with self.assertRaises(ValueError):

@@ -99,3 +99,64 @@ its complexity.
 4. The body result from run 001 (fuller candles do worse) points at entering late. The notes have
    an answer to that: wait for price to come back to the broken level and enter there (the
    retest, lesson 12). It will be tested beside the immediate entry once stops and targets exist.
+
+## Run 003, 2026-11-25: the first trade test
+
+Report: [003-trade-test.md](003-trade-test.md). Code `785fd71`. Whole trades, results in R.
+
+**The finding: the simplest version did best, and the parts built on levels did not earn their
+place.**
+
+| | Trades | Winners | Average R | Profit factor | Total R |
+|---|---|---|---|---|---|
+| Base: level break, room rule, target at the next level | 115 | 46.1% | +0.083 | 1.17 | +9.5 |
+| Level as trigger only, target always 2R | 163 | 47.9% | +0.140 | 1.30 | +22.8 |
+| **Benchmark: any convincing candle, no level, target 2R** | 646 | 44.4% | +0.105 | 1.21 | +68.1 |
+| Benchmark with the quarters ladder | 838 | 63.7% | +0.019 | 1.06 | +16.0 |
+| Base with no hours or direction filter | 398 | 34.9% | -0.037 | 0.94 | -14.7 |
+
+**1. The benchmark is the only line clear of zero.** Any convincing candle, in New York hours,
+with the 4-hour direction, stop behind the candle, target 2R: +0.105 R a trade over 646 trades,
+likely range +0.010 to +0.201, and still +0.083 with the spread doubled. On random prices the
+same setup lost 0.07 R a trade and never did better than +0.03 in six runs, so this is outside
+what luck alone produced there.
+
+**2. Levels still do not earn their place.** The level-break setups made a similar amount per
+trade (+0.083 to +0.140) on a quarter of the trades or fewer, and none is clear of zero. In
+total R the no-level benchmark made three to seven times as much.
+
+**3. Using the next level as the target, and the room rule, made things worse, not better.**
+Aiming at the next level with a room rule: +0.083. Ignoring levels ahead and always aiming at
+2R: +0.140. Tightening the room rule to 1.5 or 2.0 lowered the result further. Lesson 5's idea
+that levels mark where a trade will stall is not supported here.
+
+**4. The quarters ladder costs most of the edge.** On the large sample it raised the share of
+winners from 44% to 64% and cut the average from +0.105 R to +0.019 R, and to below zero with
+the spread doubled. Of 838 ladder trades, 332 banked nothing and only 74 reached the last step.
+On the 115-trade base the three styles cannot be told apart, which is why the large sample
+matters. Halves was the weakest of the three there (+0.025).
+
+**5. The filters are doing the work.** With no hours or direction filter the base setup lost
+(-0.037 R, profit factor 0.94). This matches runs 001 and 002.
+
+**Weaknesses this run shows**
+
+| Weakness | Evidence | Status |
+|---|---|---|
+| The afternoon loses | Base trades entered 13:00 to 17:00 New York: -0.211 R on 32 trades. Run 001 saw the same hours do worst | Same data both times, so not independent. A lead |
+| It fades through the period | Base: +0.516 R in late 2024, +0.060 in early 2025, -0.072 in late 2025 | Small groups. Needs the same cut on the large benchmark sample |
+| Many trades run out of day | 39 of 115 base trades were closed at 16:50, averaging +0.370 R. The targets may be further than a day's move allows | To be tested: nearer and further targets, and no target |
+| Most of the result may be the trend | Gold rose strongly all period. "With the 4-hour direction" may largely be "long gold" | Base sells did +0.151 on 39 trades, which argues against, weakly. Needs the benchmark split by side |
+| Still thin | Profit factor 1.21 on the data it was chosen on, against a 1.20 pass mark on unseen data | The best of eleven setups always looks better than it is |
+
+**Decisions taken from this run**
+
+1. **The benchmark becomes the working candidate.** It is simpler, has six times the trades and
+   is the only setup clear of zero. The level break stays in the code as an option under test.
+2. **The quarters ladder is not adopted.** A single target is the working exit. The ladder stays
+   in the code, and lesson 7 keeps it as a taught comparison.
+3. **The room rule and level targets stay switched off** in the working candidate. Lesson 5 is
+   corrected to say what the data showed.
+4. **Run 004 investigates the weaknesses** on the large sample: the benchmark split by side,
+   half-year and time of day, whether a level break adds anything to a benchmark trade, and
+   targets at 1R, 1.5R, 2R, 3R and none.

@@ -29,7 +29,7 @@ from statistics import median
 from rajabot.candles import NEW_YORK, Bar, build_candles
 from rajabot.data import read_mt5_bars
 from rajabot.direction import BUY, SELL, allows, combine
-from rajabot.levels import ZONE_SHARE, LevelBook
+from rajabot.levels import HIGH, ZONE_SHARE, LevelBook
 from rajabot.manage import HALVES, QUARTERS, SINGLE, TARGET, ExitStyle, Position, target_price
 from rajabot.risk import Contract, NoTrade, plan_trade
 from rajabot.space import check_room, measure_room
@@ -54,6 +54,7 @@ class Setup:
     aim_at_level: bool = True           # False: the target is always open_space_r times the risk
     open_space_r: float = 2.0
     style: ExitStyle = SINGLE
+    session_hours: tuple = (7, 16)      # New York time, signal candle's close
 
 
 # Fixed before the first trade test was run. One change at a time from the base.
@@ -69,16 +70,35 @@ SETUPS = [
     replace(BASE, name="Level as trigger only: no room rule, target always 2R", min_room=None, aim_at_level=False),
     replace(BASE, name="No hours or direction filter", readings=(), session=False),
 ]
+BENCHMARK = Setup("Benchmark: any convincing candle, same hours and direction, target 2R", use_levels=False,
+                  min_room=None, aim_at_level=False)
 BENCHMARKS = [
-    Setup("Benchmark: any convincing candle, same hours and direction, target 2R", use_levels=False,
-          min_room=None, aim_at_level=False),
-    Setup("Benchmark with the quarters ladder", use_levels=False, min_room=None, aim_at_level=False, style=QUARTERS),
+    BENCHMARK,
+    replace(BENCHMARK, name="Benchmark with the quarters ladder", style=QUARTERS),
+]
+LEVEL_TRIGGER = SETUPS[7]
+
+# Added for run 004, fixed before it was run. Where to take profit, on the large sample.
+NO_TARGET_R = 100.0                 # so far away that the trade runs to its stop or the end of the day
+TARGETS = [
+    replace(BENCHMARK, name="Benchmark, target 1R", open_space_r=1.0),
+    replace(BENCHMARK, name="Benchmark, target 1.5R", open_space_r=1.5),
+    replace(BENCHMARK, name="Benchmark, target 3R", open_space_r=3.0),
+    replace(BENCHMARK, name="Benchmark, no target: stop or end of day", open_space_r=NO_TARGET_R),
+    replace(BENCHMARK, name="Benchmark, halves at 2R", style=HALVES),
+    replace(LEVEL_TRIGGER, name="Level as trigger only, no target: stop or end of day", open_space_r=NO_TARGET_R),
+]
+# Picked by looking at runs 001 and 003, where the afternoon did worst. Hindsight: watch, do not trust.
+HINDSIGHT = [
+    replace(BENCHMARK, name="Benchmark, entries 07:00 to 13:00 only", session_hours=(7, 13)),
+    replace(LEVEL_TRIGGER, name="Level as trigger only, entries 07:00 to 13:00 only", session_hours=(7, 13)),
 ]
 
 
 def run_setup(bars: list[Bar], times: list[int], candles, readings: Readings, setup: Setup) -> dict:
     """Run one setup over the history. Returns its trades and why signals were skipped."""
     trigger = Trigger(LevelBook(setup.strength), setup.min_body) if setup.use_levels else None
+    shadow = None if setup.use_levels else LevelBook(setup.strength)      # only to note whether a level broke
     contract = Contract()
     heights: list[float] = []
     trades, skips = [], Counter()
@@ -91,6 +111,10 @@ def run_setup(bars: list[Bar], times: list[int], candles, readings: Readings, se
         seen = readings.at(now)
         reading = combine(*[seen[name] for name in setup.readings]) if setup.readings else None
 
+        broke_level = True
+        if shadow is not None:
+            update = shadow.add(candle)
+            broke_level = any((level.kind == HIGH) == candle.bullish for level in update.broken)
         if trigger is not None:
             result = trigger.on_candle(candle, reading)
             if isinstance(result, Skip):
@@ -107,7 +131,7 @@ def run_setup(bars: list[Bar], times: list[int], candles, readings: Readings, se
                 continue
             signal, average = Signal(side, None, candle, candle.body_share, 0), sum(heights) / len(heights)
 
-        if setup.session and not in_session(now):
+        if setup.session and not in_session(now, setup.session_hours):
             skips["outside_session"] += 1
             continue
         if now < busy_until:
@@ -150,7 +174,8 @@ def run_setup(bars: list[Bar], times: list[int], candles, readings: Readings, se
         busy_until = closed_at + 60
         trades.append({"time": first.time, "side": plan.side, "r": position.result_r, "reason": position.last_reason,
                        "banked": position.banked, "minutes": (closed_at - first.time) // 60,
-                       "planned_r": reward / plan.distance, "aim": "a level" if wall is not None else "open space"})
+                       "planned_r": reward / plan.distance, "aim": "a level" if wall is not None else "open space",
+                       "broke_level": broke_level})
     return {"trades": trades, "skips": dict(skips)}
 
 
@@ -200,7 +225,43 @@ def _time_of_day(utc_seconds: int) -> str:
     return "after 17:00 New York"
 
 
+GROUPS = [("One change at a time", SETUPS),
+          ("The benchmarks", BENCHMARKS),
+          ("Where to take profit", TARGETS),
+          ("Suggested by earlier runs (hindsight)", HINDSIGHT)]
+NOTES = {"The benchmarks": "Every convincing candle, level or no level, under the same hours, direction and stop. A "
+                           "level-based setup that cannot beat these is not earning its complexity.",
+         "Where to take profit": "The same entries with the profit taken at different distances. \"No target\" "
+                                 "holds until the stop or 16:50 New York.",
+         "Suggested by earlier runs (hindsight)": "Picked after seeing that the afternoon did worst in runs 001 and "
+                                                  "003. A setting chosen because it looked good will look good "
+                                                  "again on the same data. Watch, do not trust."}
+
+
+def _cuts(title: str, trades: list[dict], with_level_flag: bool) -> list[str]:
+    cuts = [("Buy and sell", lambda t: t["side"]),
+            ("Time of day at entry", lambda t: _time_of_day(t["time"])),
+            ("Half-year", lambda t: _half_year(t["time"])),
+            ("How it ended", lambda t: t["reason"])]
+    if with_level_flag:
+        cuts.insert(0, ("Did the signal candle also break a level?", lambda t: "yes, broke a level" if t["broke_level"] else "no level broken"))
+    else:
+        cuts += [("Aiming at a level, or open space", lambda t: t["aim"]),
+                 ("Reward planned at entry", lambda t: "under 1.5R" if t["planned_r"] < 1.5 else "1.5R to 3R" if t["planned_r"] < 3 else "3R or more")]
+    out = ["", "## Inside: " + title, "", "Small groups swing widely by luck: read the trade count before the average."]
+    for name, key in cuts:
+        groups = defaultdict(list)
+        for trade in trades:
+            groups[key(trade)].append(trade)
+        out += ["", "### " + name, "", HEAD] + [_line(group, summarise(groups[group])) for group in sorted(groups)]
+    if trades:
+        out += ["", "Median time in a trade: %d minutes. Median reward planned: %.2fR." % (
+            median(t["minutes"] for t in trades), median(t["planned_r"] for t in trades))]
+    return out
+
+
 def report(facts: dict, rows: list[tuple[Setup, dict, dict]]) -> str:
+    by_name = {setup.name: (setup, once, twice) for setup, once, twice in rows}
     out = ["# Trade test on the development part", "",
            "Whole trades, entry to exit: stop beyond the signal candle, one trade at a time, every trade risking "
            "the same. Results are in R (multiples of the risk). The spread is paid.", "",
@@ -212,10 +273,16 @@ def report(facts: dict, rows: list[tuple[Setup, dict, dict]]) -> str:
            "- \"Likely range\" is a rough 95% range for the average R. \"Worst drop\" is the largest fall from a "
            "peak in the running total, in R.",
            "- For scale: the pass marks lesson 9 will use on unseen data are a profit factor of at least 1.20 "
-           "and an average above 0 R.", "",
-           "## The setups", "", HEAD]
-    for setup, once, twice in rows:
-        out.append(_line(setup.name, summarise(once["trades"]), summarise(twice["trades"])))
+           "and an average above 0 R."]
+    for title, setups in GROUPS:
+        present = [by_name[setup.name] for setup in setups if setup.name in by_name]
+        if not present:
+            continue
+        out += ["", "## " + title, ""]
+        if title in NOTES:
+            out += [NOTES[title], ""]
+        out.append(HEAD)
+        out += [_line(setup.name, summarise(once["trades"]), summarise(twice["trades"])) for setup, once, twice in present]
 
     out += ["", "## How the trades ended", "",
             "By the last part closed. \"Stop\" includes stops that had been moved up behind banked parts, so a "
@@ -234,33 +301,19 @@ def report(facts: dict, rows: list[tuple[Setup, dict, dict]]) -> str:
             banked = Counter(t["banked"] for t in once["trades"])
             out.append("| %s | %d | %d | %d | %d | %d |" % (setup.name, banked[0], banked[1], banked[2], banked[3], banked[4]))
 
-    base = rows[0][1]["trades"]
-    cuts = [("Buy and sell", lambda t: t["side"]),
-            ("Time of day at entry", lambda t: _time_of_day(t["time"])),
-            ("Aiming at a level, or open space", lambda t: t["aim"]),
-            ("Reward planned at entry", lambda t: "under 1.5R" if t["planned_r"] < 1.5 else "1.5R to 3R" if t["planned_r"] < 3 else "3R or more"),
-            ("How it ended", lambda t: t["reason"]),
-            ("Half-year", lambda t: _half_year(t["time"]))]
-    out += ["", "## Inside the base setup", "",
-            "Small groups swing widely by luck: read the trade count before the average."]
-    for title, key in cuts:
-        groups = defaultdict(list)
-        for trade in base:
-            groups[key(trade)].append(trade)
-        out += ["", "### " + title, "", HEAD] + [_line(name, summarise(groups[name])) for name in sorted(groups)]
-    if base:
-        out += ["", "Median time in a trade: %d minutes. Median reward planned: %.2fR." % (
-            median(t["minutes"] for t in base), median(t["planned_r"] for t in base))]
+    for setup in (BENCHMARK, LEVEL_TRIGGER, BASE):
+        if setup.name in by_name:
+            out += _cuts(setup.name, by_name[setup.name][1]["trades"], with_level_flag=not setup.use_levels)
 
     out += ["", "## Signals the base setup did not trade", "", "| Reason | Count |", "|---|---|"]
-    out += ["| %s | %d |" % item for item in sorted(rows[0][1]["skips"].items())] or ["| none | 0 |"]
+    out += ["| %s | %d |" % item for item in sorted(by_name[BASE.name][1]["skips"].items())] or ["| none | 0 |"]
     out += ["", "## What this cannot say", "",
             "- It describes 13 months of the past. It is not a forecast.",
             "- Fills are simulated from one-minute bars. A stop fills at its price unless price jumped past it. "
             "Real stops slip more. The doubled-spread column is the allowance for that.",
             "- When one minute touches both the stop and a target, the stop is assumed first. When a target moves "
             "the stop up, the new stop applies from the next minute.",
-            "- Several setups are compared on the same data. The best of several looks better than it is.", ""]
+            "- Many setups are compared on the same data. The best of many looks better than it is.", ""]
     return "\n".join(out)
 
 
@@ -275,7 +328,7 @@ def check(bars: list[Bar]) -> tuple[str, dict]:
     candles = build_candles(bars, 30, as_of=bars[-1].time + 3600)
     readings = Readings(bars)
     rows = [(setup, run_setup(bars, times, candles, readings, setup), run_setup(doubled, times, candles, readings, setup))
-            for setup in SETUPS + BENCHMARKS]
+            for setup in SETUPS + BENCHMARKS + TARGETS + HINDSIGHT]
     iso = lambda t: datetime.fromtimestamp(t, timezone.utc).strftime("%Y-%m-%d")
     facts = {"first": iso(bars[0].time), "last": iso(bars[-1].time), "bars": len(bars), "candles": len(candles),
              "median_spread": median(bar.spread for bar in bars), "commit": _commit()}
