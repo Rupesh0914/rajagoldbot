@@ -27,8 +27,8 @@ share of the account, and be out by the end of the New York day.
 | 2 | [Levels: where price turned before](lessons/02-levels.md) | `rajabot/levels.py` | Done |
 | 3 | [Direction: reading the 4-hour chart](lessons/03-direction.md) | `rajabot/direction.py` | Done |
 | 4 | [The trigger: a 30-minute close through a level](lessons/04-the-trigger.md) | `rajabot/trigger.py` | Done |
-| 5 | Room to run: is there open space ahead? | `rajabot/space.py` | Next |
-| 6 | Stop loss, costs and how much to risk | `rajabot/risk.py` | |
+| 5 | [Room to run: is there open space ahead?](lessons/05-room-to-run.md) | `rajabot/space.py` | Done |
+| 6 | Stop loss, costs and how much to risk | `rajabot/risk.py` | Next |
 | 7 | Managing the trade: partial closes, break-even, going flat | `rajabot/manage.py` | |
 | 8 | When not to trade: sideways markets, hours, news, daily safety limits | `rajabot/filters.py` | |
 | 9 | Honest testing: a backtest that cannot fool us | `rajabot/backtest/` | |
@@ -79,4 +79,5 @@ python -m rajabot levels --example twice         # lesson 2: a level that held t
 python -m rajabot direction 3700 3710 3705 3720 3730 3725 3740    # lesson 3: which way?
 python -m rajabot structure                      # lesson 3: peaks and dips stepping up
 python -m rajabot trigger                        # lesson 4: a signal, a skip, or nothing
+python -m rajabot room                           # lesson 5: is there room to run?
 ```

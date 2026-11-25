@@ -7,8 +7,10 @@ from datetime import datetime, timezone
 from .candles import NEW_YORK, Candle, describe
 from .direction import DEFAULT_LOOKBACK, STRUCTURE_STRENGTH, direction, structure
 from .direction import explain
-from .examples import LESSON_2, LESSON_2_TWICE, LESSON_3, LESSON_4_WEAK, LESSON_4_WICK
+from .examples import (LESSON_2, LESSON_2_TWICE, LESSON_3, LESSON_4_WEAK, LESSON_4_WICK, LESSON_5_ROOM,
+                       LESSON_5_TIGHT)
 from .levels import HIGH, LevelBook, find_swings
+from .space import DEFAULT_MIN_RATIO, describe_room, measure_room
 from .trigger import DEFAULT_MIN_BODY, Signal, Skip, Trigger
 
 
@@ -77,6 +79,23 @@ def trigger_story(candles: list[Candle], direction: str | None, min_body: float,
     return lines
 
 
+def room_story(candles: list[Candle], min_ratio: float, allow_open_space: bool, strength: int = 2) -> list[str]:
+    """Find the signal in an example and measure the room ahead of it."""
+    trigger = Trigger(LevelBook(strength))
+    lines = []
+    for candle in candles:
+        result = trigger.on_candle(candle)
+        if isinstance(result, Signal):
+            lines.append("%s SIGNAL at %s: closed at %.2f through the %s at %.2f. Candle low %.2f, high %.2f." % (
+                result.side.upper(), _new_york(result.time), candle.close, result.level.name, result.level.price,
+                candle.low, candle.high))
+            lines.append(describe_room(measure_room(result, trigger.book), min_ratio, allow_open_space))
+            break
+    else:
+        lines.append("No signal in this example.")
+    return lines
+
+
 def structure_story(candles: list[Candle], strength: int) -> list[str]:
     """Show the peaks and dips of the lesson's 4-hour example and what they add up to."""
     lines = []
@@ -109,6 +128,12 @@ def main(argv: list[str] | None = None) -> int:
                          help="share of the candle that must be body (default %.2f)" % DEFAULT_MIN_BODY)
     trigger.add_argument("--min-turns", type=int, default=1,
                          help="times price must have turned at the level (default 1 = any level)")
+    room = commands.add_parser("room", help="Lesson 5: is there room to run after the signal?")
+    room.add_argument("--example", choices=("room", "tight", "open"), default="room",
+                      help="room: a ceiling well above. tight: a ceiling just above. open: nothing in the way")
+    room.add_argument("--min-ratio", type=float, default=DEFAULT_MIN_RATIO,
+                      help="room needed, as a multiple of the risk (default %.1f)" % DEFAULT_MIN_RATIO)
+    room.add_argument("--no-open-space", action="store_true", help="skip signals with no level ahead to aim at")
     direction = commands.add_parser("direction", help="Lesson 3: which way, from 4-hour closing prices (oldest first)")
     direction.add_argument("closes", type=float, nargs="+", help="closing prices of closed 4-hour candles, oldest first")
     direction.add_argument("--lookback", type=int, default=DEFAULT_LOOKBACK,
@@ -132,6 +157,11 @@ def main(argv: list[str] | None = None) -> int:
         example = {"break": LESSON_2, "wick": LESSON_4_WICK, "weak": LESSON_4_WEAK}[args.example]
         reading = None if args.direction == "off" else args.direction
         print("\n".join(trigger_story(example, reading, args.min_body, args.min_turns)))
+    elif args.command == "room":
+        if args.min_ratio <= 0:
+            parser.error("--min-ratio must be positive")
+        example = {"room": LESSON_5_ROOM, "tight": LESSON_5_TIGHT, "open": LESSON_2}[args.example]
+        print("\n".join(room_story(example, args.min_ratio, not args.no_open_space)))
     elif args.command == "structure":
         print("\n".join(structure_story(LESSON_3, STRUCTURE_STRENGTH)))
     elif args.command == "direction":

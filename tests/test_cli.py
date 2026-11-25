@@ -99,5 +99,21 @@ class TriggerCommand(unittest.TestCase):
                 run("trigger", *bad)
 
 
+class RoomCommand(unittest.TestCase):
+    def test_the_three_examples(self):
+        out = run("room")
+        self.assertIn("Next ceiling in the way: 3775.00. Room: 13.00.", out)
+        self.assertIn("Room is 1.62 times the risk. Needed: 1.00.", out)
+        self.assertTrue(out.endswith("ENOUGH ROOM."))
+        self.assertTrue(run("room", "--example", "tight").endswith("NOT ENOUGH ROOM: skipped."))
+        self.assertIn("No level in the way: open space.", run("room", "--example", "open"))
+
+    def test_the_options(self):
+        self.assertTrue(run("room", "--min-ratio", "2").endswith("NOT ENOUGH ROOM: skipped."))
+        self.assertIn("open space is switched off", run("room", "--example", "open", "--no-open-space"))
+        with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+            run("room", "--min-ratio", "0")
+
+
 if __name__ == "__main__":
     unittest.main()

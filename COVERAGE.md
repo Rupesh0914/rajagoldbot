@@ -65,7 +65,7 @@ turned into something measured. This table tracks how far that has got.
 | Candles stepping up or down | Last two peaks and last two dips on the 4-hour chart | 3 | Built, as an option |
 | The weekly and daily background | Daily close against a week earlier | 3 | Built, as an option |
 | A strong, convincing breakout candle | Share of the candle that is body, and closing in the direction of the break | 4 | Built |
-| Open space ahead, or a wall close by | Distance to the next level against the stop | 5 | Planned |
+| Open space ahead, or a wall close by | Distance to the next level, against the distance to the far end of the signal candle | 5 | Built. Walls from the 4-hour and daily charts not yet counted |
 | A market going sideways | Overlapping candles, mixed structure | 8 | Structure built; the rest planned |
 | A rejection wick warning that a move is tiring | Wick against the move, measured against the body | 8 | Planned |
 | "This one just looks wrong" | Nothing. Some judgement cannot be written as a rule | | See below |
@@ -98,6 +98,9 @@ may be tuned on test results: Lesson 9 fixes them before the data is seen.
 | 4 | How much of the signal candle must be body | 50%, 65% or 80% | Candidates from the notes; one is fixed in Lesson 9 |
 | 4 | Signal level when one candle breaks several | The furthest one broken | Our choice |
 | 4 | A level broken by a candle that fails a check | Used up, no second chance | Our choice |
+| 5 | What counts as a wall | The nearest standing 30-minute ceiling above a buy, floor below a sell | Our choice |
+| 5 | Room needed | 1.0, 1.5 or 2.0 times the risk | Candidates from the notes; one is fixed in Lesson 9 |
+| 5 | Open space, with no level ahead | Allowed, or skipped | Decided in Lesson 9 |
 
 ## Where the notes disagree with themselves
 

@@ -57,6 +57,35 @@ LESSON_4_WEAK = LESSON_2[:8] + _half_hours(datetime(2026, 11, 10, 17, 0, tzinfo=
     (3761.5, 3763.0, 3757.0, 3758.0),      # 12:30
 ])
 
+# Lesson 5. A higher peak early in the morning leaves a ceiling above the one that gets broken.
+_LESSON_5_REST = [
+    (3761.0, 3762.0, 3750.0, 3751.0),      # 08:00
+    (3751.0, 3753.0, 3746.0, 3752.0),      # 08:30  the low of the morning, 3746
+    (3752.0, 3757.0, 3750.0, 3756.0),      # 09:00
+    (3756.0, 3761.0, 3754.0, 3757.0),      # 09:30  a lower peak, 3761
+    (3757.0, 3758.0, 3751.0, 3752.0),      # 10:00
+    (3752.0, 3755.0, 3749.0, 3754.0),      # 10:30
+    (3755.0, 3763.0, 3754.0, 3762.0),      # 11:00  closes above 3761: the signal candle
+]
+# Room: the higher ceiling is at 3775, 13 above the entry.
+LESSON_5_ROOM = _half_hours(datetime(2026, 11, 10, 11, 0, tzinfo=timezone.utc), [
+    (3766.0, 3770.0, 3764.0, 3768.0),      # 06:00
+    (3768.0, 3772.0, 3766.0, 3771.0),      # 06:30
+    (3771.0, 3775.0, 3769.0, 3770.0),      # 07:00  the early peak, 3775
+    (3770.0, 3771.0, 3760.0, 3761.0),      # 07:30
+] + _LESSON_5_REST + [
+    (3762.0, 3767.0, 3760.0, 3766.0),      # 11:30
+])
+# Tight: the higher ceiling is at 3766, only 4 above the entry.
+LESSON_5_TIGHT = _half_hours(datetime(2026, 11, 10, 11, 0, tzinfo=timezone.utc), [
+    (3758.0, 3762.0, 3756.0, 3760.0),      # 06:00
+    (3760.0, 3764.0, 3758.0, 3763.0),      # 06:30
+    (3763.0, 3766.0, 3761.0, 3762.0),      # 07:00  the early peak, 3766
+    (3762.0, 3763.0, 3757.0, 3758.0),      # 07:30
+] + [(3758.0, 3759.0, 3750.0, 3751.0)] + _LESSON_5_REST[1:] + [
+    (3762.0, 3765.0, 3759.0, 3760.0),      # 11:30  stalls under 3766
+])
+
 FOUR_HOURS = 4 * 3600
 
 
