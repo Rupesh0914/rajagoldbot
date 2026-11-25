@@ -145,9 +145,14 @@ Results on the first 13 months of your Eightcap history. Clues, not proof. Detai
 - **In whole trades the plain strong candle did best.** Stop behind the candle, target at twice
   the risk: +0.105 R a trade over 646 trades, the only setup clearly above zero.
 
-So the honest position is: the hours and the direction are doing the work, and the level break
-has not yet shown that it adds anything. It stays in the bot as an option under test. The
-working setup is the plain strong candle in the right hours and direction.
+- **One later check points the other way.** Among those 646 trades, the 99 whose candle also
+  broke a level made +0.307 R each, against +0.069 R for the 547 that did not. That is a big
+  gap on a small group: suggestive, not settled.
+
+So the honest position is: the hours and the direction are doing most of the work, and whether
+the level break adds to them is an open question with one encouraging sign. The working setup is
+the plain strong candle in the right hours and direction. "Level breaks only" goes forward as a
+candidate to be judged on prices the bot has not seen.
 
 ## What the bot piece does
 

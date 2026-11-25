@@ -160,3 +160,77 @@ matters. Halves was the weakest of the three there (+0.025).
 4. **Run 004 investigates the weaknesses** on the large sample: the benchmark split by side,
    half-year and time of day, whether a level break adds anything to a benchmark trade, and
    targets at 1R, 1.5R, 2R, 3R and none.
+
+## Run 004, 2026-11-25: investigating the weaknesses
+
+Report: [004-trade-test.md](004-trade-test.md). Code `9277b60`. Each weakness from run 003,
+tested on the large benchmark sample (646 trades).
+
+| Weakness from run 003 | What run 004 found | Verdict |
+|---|---|---|
+| Most of it may be the trend | Buys +0.111 R on 359 trades. Sells +0.098 R on 287 | **Not supported.** Both sides made about the same, in a market that rose all period |
+| It fades through the period | +0.199 R in late 2024, +0.075 in early 2025, +0.103 in late 2025 | **Not supported on the large sample.** Positive in all three. The fade in run 003 was a small-group effect |
+| Many trades run out of day | See the next table | **Confirmed, and it points the other way from what was feared:** the trades still open at 16:50 are the good ones |
+| The afternoon loses | 07:00-10:00 +0.195 R. 10:00-13:00 +0.069. 13:00-17:00 -0.016 | **Partly.** The afternoon adds nothing. It does not lose much either |
+| Levels do not earn their place | See below | **Reopened.** One cut says they may |
+
+**Where to take profit: the further away, the better, all the way.**
+
+| Target | Trades | Winners | Average R | Profit factor | Spread doubled |
+|---|---|---|---|---|---|
+| 1R | 855 | 51.9% | +0.045 | 1.11 | +0.030 |
+| 1.5R | 713 | 46.8% | +0.091 | 1.19 | +0.062 |
+| 2R | 646 | 44.4% | +0.105 | 1.21 | +0.083 |
+| 3R | 582 | 40.5% | +0.133 | 1.25 | +0.101 |
+| None: stop or end of day | 499 | 37.3% | +0.175 | 1.30 | +0.134 |
+| Halves at 2R | 687 | 53.0% | +0.058 | 1.14 | +0.034 |
+
+Five steps, and each one further out did better than the last. That is harder to put down to
+luck than one good number would be. It also fits everything before it: the quarters ladder and
+halves, which take profit early, were the two worst exits. The cost is fewer winners (37%) and a
+larger worst drop (15.9 R against 12.5).
+
+**Do levels add anything? One cut says yes.** Inside the benchmark's own trades:
+
+| | Trades | Winners | Average R | Profit factor |
+|---|---|---|---|---|
+| Signal candle also broke a level | 99 | 52.5% | +0.307 | 1.72 |
+| No level broken | 547 | 43.0% | +0.069 | 1.13 |
+
+This question was written down before the run. The gap is large, and the level group is clear of
+zero on its own. It is also 99 trades, and the gap between the two groups is about 1.7 times its
+own uncertainty: suggestive, not settled.
+
+It does not square neatly with the "level as trigger only" setup, which trades level breaks alone
+and made +0.140 R on 163 trades. The difference is which breaks are taken. The benchmark takes
+one trade at a time, so its 99 are level breaks that came while it had no trade open. The other
+64 or so came while an earlier trade was still running, and work out at about -0.12 R. So it may
+be that a level break is worth taking when it starts a move, and not when it comes late in one.
+That reading was made after seeing the numbers. It is a lead to test, not a result.
+
+**The hindsight lines did what hindsight lines do.** Entries 07:00 to 13:00 only: +0.141 R
+against +0.105. Better, and chosen because it would be. It goes forward as a candidate to be
+judged on unseen data, not as a finding.
+
+**Decisions taken from this run**
+
+1. **The working exit becomes "no target": hold to the stop or 16:50.** Supported by a steady
+   trend across five target distances and by every earlier exit comparison.
+2. **The working setup stays the benchmark**, 07:00 to 16:00, with the 4-hour direction.
+3. **Levels are back in question, in a good way.** Swing levels stay in the bot. "Take level
+   breaks only when no trade is open" becomes a candidate.
+4. **Exploring on this data stops here.** Four runs have now looked at the same 13 months. Every
+   further look makes the next result less trustworthy. The candidates below go to lesson 9,
+   where the 6 unseen validation months choose between them and the 6 holdout months judge the
+   winner once.
+
+**Candidates carried forward to lesson 9**
+
+| # | Entry | Hours | Exit |
+|---|---|---|---|
+| 1 | Any convincing candle, with the 4-hour direction | 07:00-16:00 | Target 2R |
+| 2 | Same | 07:00-16:00 | No target |
+| 3 | Same | 07:00-13:00 | No target |
+| 4 | Level break only, with the 4-hour direction | 07:00-16:00 | No target |
+
+All use the stop beyond the signal candle, 0.5% risk, one trade at a time, flat at 16:50.

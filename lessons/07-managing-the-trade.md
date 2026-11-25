@@ -175,9 +175,27 @@ On the large sample (every strong candle in New York hours, with the 4-hour dire
 
 This is section 5 in real numbers: a high win rate, bought with the size of the winners.
 
-So the working exit is a **single target**. The ladder stays in the code and in this lesson,
-because it is the best way to see the trade-off, and because the question is not closed: this is
-one period of one market.
+A second test then moved the single target nearer and further:
+
+| Target | Winners | Average R |
+|---|---|---|
+| 1R | 52% | +0.045 |
+| 1.5R | 47% | +0.091 |
+| 2R | 44% | +0.105 |
+| 3R | 41% | +0.133 |
+| None: hold to the stop or 16:50 | 37% | +0.175 |
+
+Every step further out did better, all the way to having no target at all. Fewer winners each
+time, and more made overall. The trades still open at 16:50 turned out to be the good ones:
+closed there, they averaged +0.38 R.
+
+So the working exit is **no target**: the trade ends at its stop or at 16:50. The ladder stays in
+the code and in this lesson, because it is the best way to see the trade-off, and because the
+question is not closed: this is one period of one market, and the final choice is made in
+Lesson 9 on prices the bot has not seen.
+
+A warning that comes with this exit: it wins only about 37% of the time. Most trades lose, and a
+few long runs pay for them. That is hard to sit through, and it is the price of the result.
 
 ## What the bot piece does
 

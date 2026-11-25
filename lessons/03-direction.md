@@ -166,8 +166,10 @@ Results on the first 13 months of your Eightcap history. Clues, not proof. Detai
 So the working setup uses the closes rule only. Structure and the daily background are built and
 switched off.
 
-One caution. Gold rose strongly through this whole period. "Trade with the direction" may partly
-have been "buy a rising market". That is being checked.
+One caution, and what came of it. Gold rose strongly through this whole period, so "trade with
+the direction" might have been no more than "buy a rising market". That was checked: in the
+working setup, buys made +0.111 R a trade and sells +0.098 R. Both sides worked about equally,
+and the result was positive in each half-year. So it does not look like a buying bias alone.
 
 ## What the bot piece does
 
