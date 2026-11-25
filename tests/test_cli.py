@@ -153,5 +153,24 @@ class ExitsCommand(unittest.TestCase):
             run("exits", "--balance", "500")
 
 
+class GateCommands(unittest.TestCase):
+    def test_the_lesson_eight_moments(self):
+        out = run("gate")
+        for line in ("Tuesday 1 Dec, 09:30, spread 0.15              OK to trade",
+                     "Tuesday 1 Dec, 05:00, spread 0.15              NO: outside the New York session",
+                     "Tuesday 1 Dec, 10:00, spread 0.80              NO: the spread is too wide",
+                     "Friday 4 Dec, 08:15 (jobs report at 08:30)     NO: scheduled news",
+                     "12:30, a new signal                            NO: lost 3R today",
+                     "Thursday 3 Dec, 09:30: a new day               OK to trade"):
+            self.assertIn(line, out)
+
+    def test_progress(self):
+        self.assertEqual(run("progress", "3750", "3754", "3758", "3762", "3766"),
+                         "Net move 16.00, distance travelled 16.00: progress 1.00. Not sideways.")
+        self.assertTrue(run("progress", "3750", "3756", "3751", "3757", "3750", "3755", "3751").endswith("Sideways (under 0.20)."))
+        with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+            run("progress", "3750", "3751")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -11,6 +11,7 @@ from .examples import (LESSON_2, LESSON_2_TWICE, LESSON_3, LESSON_4_WEAK, LESSON
                        LESSON_5_TIGHT)
 from .levels import HIGH, LevelBook, find_swings
 from .candles import Bar
+from .filters import DayGuard, Gate, NewsCalendar, jobs_report_time, progress
 from .levels import ZONE_SHARE
 from .manage import HALVES, QUARTERS, SINGLE, Position, target_price
 from .risk import DEFAULT_RISK_SHARE, Contract, NoTrade, describe_plan, plan_trade, position_size
@@ -169,6 +170,44 @@ def exits_story(balance: float, spread: float = 0.20) -> list[str]:
     return lines
 
 
+def gate_story() -> list[str]:
+    """Moments the bot would and would not trade, and why."""
+    def at(year, month, day, hour, minute):
+        return int(datetime(year, month, day, hour, minute, tzinfo=NEW_YORK).timestamp())
+
+    news = NewsCalendar()
+    news.add(jobs_report_time(2026, 12), "US jobs report")
+    gate = Gate(news=news, guard=DayGuard())
+    words = {None: "OK to trade", "outside_session": "NO: outside the New York session",
+             "spread_too_wide": "NO: the spread is too wide", "news": "NO: scheduled news",
+             "max_trades_per_day": "NO: 5 trades already today", "daily_loss_limit": "NO: lost 3R today",
+             "losing_streak": "NO: 3 losses in a row today"}
+    lines = ["Rules switched on: New York hours 07:00-16:00, spread at most 0.50, news 30 minutes either side,",
+             "at most 5 trades a day, stop after -3R, stop after 3 losses in a row.", ""]
+    moments = [("Tuesday 1 Dec, 09:30, spread 0.15", at(2026, 12, 1, 9, 30), 0.15),
+               ("Tuesday 1 Dec, 05:00, spread 0.15", at(2026, 12, 1, 5, 0), 0.15),
+               ("Tuesday 1 Dec, 16:30, spread 0.15", at(2026, 12, 1, 16, 30), 0.15),
+               ("Saturday 5 Dec, 10:00", at(2026, 12, 5, 10, 0), 0.15),
+               ("Tuesday 1 Dec, 10:00, spread 0.80", at(2026, 12, 1, 10, 0), 0.80),
+               ("Friday 4 Dec, 08:15 (jobs report at 08:30)", at(2026, 12, 4, 8, 15), 0.15),
+               ("Friday 4 Dec, 09:00 (30 minutes after)", at(2026, 12, 4, 9, 0), 0.15),
+               ("Friday 4 Dec, 09:30", at(2026, 12, 4, 9, 30), 0.15)]
+    for label, when, spread in moments:
+        lines.append("%-46s %s" % (label, words[gate.check(when, "buy", spread)]))
+    lines += ["", "A bad Wednesday (2 Dec):"]
+    for label, when, result in [("09:30 trade", at(2026, 12, 2, 9, 30), -1.0), ("10:30 trade", at(2026, 12, 2, 10, 30), -1.0),
+                                ("11:30 trade", at(2026, 12, 2, 11, 30), -1.0)]:
+        verdict = gate.check(when, "buy", 0.15)
+        lines.append("%-46s %s" % (label, words[verdict]))
+        if verdict is None:
+            gate.guard.opened(when)
+            gate.guard.closed(when + 1800, result)
+            lines.append("%-46s %s" % ("", "    ...stopped out, %+.0fR" % result))
+    lines.append("%-46s %s" % ("12:30, a new signal", words[gate.check(at(2026, 12, 2, 12, 30), "buy", 0.15)]))
+    lines.append("%-46s %s" % ("Thursday 3 Dec, 09:30: a new day", words[gate.check(at(2026, 12, 3, 9, 30), "buy", 0.15)]))
+    return lines
+
+
 def structure_story(candles: list[Candle], strength: int) -> list[str]:
     """Show the peaks and dips of the lesson's 4-hour example and what they add up to."""
     lines = []
@@ -222,6 +261,9 @@ def main(argv: list[str] | None = None) -> int:
     exits = commands.add_parser("exits", help="Lesson 7: the same trade ended three ways, under each exit style")
     exits.add_argument("--balance", type=float, default=100000.0,
                        help="account balance (default 100000, big enough to split evenly; try 10000 or 3000)")
+    commands.add_parser("gate", help="Lesson 8: moments the bot would and would not trade, and why")
+    sideways = commands.add_parser("progress", help="Lesson 8: how much of the distance travelled was real progress")
+    sideways.add_argument("closes", type=float, nargs="+", help="closing prices, oldest first")
     direction = commands.add_parser("direction", help="Lesson 3: which way, from 4-hour closing prices (oldest first)")
     direction.add_argument("closes", type=float, nargs="+", help="closing prices of closed 4-hour candles, oldest first")
     direction.add_argument("--lookback", type=int, default=DEFAULT_LOOKBACK,
@@ -269,6 +311,20 @@ def main(argv: list[str] | None = None) -> int:
         if args.balance < 2000:
             parser.error("with under 2000 the lesson's trade is too small to place at all")
         print("\n".join(exits_story(args.balance)))
+    elif args.command == "gate":
+        print("\n".join(gate_story()))
+    elif args.command == "progress":
+        if len(args.closes) < 3:
+            parser.error("give at least three closing prices")
+        candles = [Candle(i * 1800, c, c, c, c, 1800) for i, c in enumerate(args.closes)]
+        value = progress(candles, len(candles) - 1)
+        if value is None:
+            print("Price did not move at all.")
+        else:
+            net = abs(args.closes[-1] - args.closes[0])
+            print("Net move %.2f, distance travelled %.2f: progress %.2f. %s" % (
+                net, net / value if value else 0.0, value,
+                "Sideways (under 0.20)." if value < 0.2 else "Not sideways."))
     elif args.command == "structure":
         print("\n".join(structure_story(LESSON_3, STRUCTURE_STRENGTH)))
     elif args.command == "direction":

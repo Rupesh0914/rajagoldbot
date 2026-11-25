@@ -32,6 +32,7 @@ from statistics import median
 
 from rajabot.candles import NEW_YORK, Bar, build_broker_candles, build_candles
 from rajabot.data import read_mt5_bars
+from rajabot.filters import SESSION_HOURS, in_session
 from rajabot.direction import (BUY, DAILY_LOOKBACK, DEFAULT_LOOKBACK, DOWN, FLAT, MIXED, SELL, STRUCTURE_STRENGTH,
                                UNKNOWN, UP, allows, combine, direction_of_closes)
 from rajabot.levels import HIGH, ZONE_SHARE, LevelBook, find_swings
@@ -65,7 +66,6 @@ NO_LEVEL = [
 # Added for the second run. Every piece of these was written down before any price was seen: the
 # session hours and the closes rule in the owner's research notes (the earlier study's D5 and D6),
 # level quality in lesson 2. Only the act of combining them came after the first run.
-SESSION_HOURS = (7, 16)     # signal candle closes 07:00 to 16:00 New York time, Monday to Friday
 COMBINED = [
     ("New York session only (07:00-16:00)", dict(session=True)),
     ("Session + closes rule", dict(session=True, readings=("closes",))),
@@ -167,13 +167,6 @@ def session_of(utc_seconds: int) -> str:
     if hour < 17:
         return "12-17 New York (NY afternoon)"
     return "17-24 New York (evening)"
-
-
-def in_session(utc_seconds: int, hours: tuple[int, int] = SESSION_HOURS) -> bool:
-    """Monday to Friday, 07:00 to 16:00 New York time by default (both ends included)."""
-    local = datetime.fromtimestamp(utc_seconds, timezone.utc).astimezone(NEW_YORK)
-    minutes = local.hour * 60 + local.minute
-    return local.weekday() < 5 and hours[0] * 60 <= minutes <= hours[1] * 60
 
 
 def run_variant(bars, times, candles, readings: Readings, settings: dict) -> dict:

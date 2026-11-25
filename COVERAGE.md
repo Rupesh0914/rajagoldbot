@@ -66,8 +66,8 @@ turned into something measured. This table tracks how far that has got.
 | The weekly and daily background | Daily close against a week earlier | 3 | Built, as an option |
 | A strong, convincing breakout candle | Share of the candle that is body, and closing in the direction of the break | 4 | Built |
 | Open space ahead, or a wall close by | Distance to the next level, against the distance to the far end of the signal candle | 5 | Built. Walls from the 4-hour and daily charts not yet counted |
-| A market going sideways | Overlapping candles, mixed structure | 8 | Structure built; the rest planned |
-| A rejection wick warning that a move is tiring | Wick against the move, measured against the body | 8 | Planned |
+| A market going sideways | Progress: how far price got against how far it travelled, over six hours. Also mixed structure | 8 | Built, switched off, not yet tested |
+| A rejection wick warning that a move is tiring | A wick at least twice the body on the last 4-hour candle, against the trade | 8 | Built, switched off, not yet tested |
 | "This one just looks wrong" | Nothing. Some judgement cannot be written as a rule | | See below |
 
 Every option is tried on the first 13 months of history (`research/results`) and then judged in
@@ -113,6 +113,12 @@ may be tuned on test results: Lesson 9 fixes them before the data is seen.
 | 7 | Stop after a banked part | Break-even after the first, then one step behind | From the Sugarwood bot |
 | 7 | Time stop | 4 hours with nothing banked (quarters only) | From the Sugarwood bot |
 | 7 | End of day | Everything closed at 16:50 New York | From the Sugarwood bot |
+| 8 | Trading hours | Signal candle closes 07:00 to 16:00 New York, Monday to Friday | From the notes' proposals. 07:00 to 13:00 is a candidate for Lesson 9 |
+| 8 | Widest spread allowed | 0.50 dollars | Our choice |
+| 8 | Time to stay out around news | 30 minutes before and after | Our choice |
+| 8 | Sideways | Progress under 0.20 over 12 candles | Our choice. Switched off |
+| 8 | Rejection wick | At least twice the body | From the notes' candidates (1.5, 2, 3). Switched off |
+| 8 | Daily limits | 5 trades, 3R lost, 3 losses in a row | From the Sugarwood bot |
 
 ## Where the notes disagree with themselves
 
