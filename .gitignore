@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+/data/
+/secrets/
+/config.json
+.env
+.env.*
+.DS_Store

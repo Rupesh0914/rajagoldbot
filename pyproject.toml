@@ -1,0 +1,9 @@
+[project]
+name = "rajagoldbot"
+version = "0.1.0"
+description = "A gold trading bot built lesson by lesson around price-action levels"
+requires-python = ">=3.10"
+dependencies = ["tzdata"]
+
+[tool.setuptools.packages.find]
+include = ["rajabot*"]
