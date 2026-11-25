@@ -58,6 +58,25 @@ VARIANTS = [
 NO_LEVEL = [
     ("No level at all: every convincing candle (body 50%)", dict(readings=())),
     ("No level, with the closes rule", dict(readings=("closes",))),
+    ("No level, New York session only", dict(session=True)),
+    ("No level, New York session + closes rule", dict(session=True, readings=("closes",))),
+]
+
+# Added for the second run. Every piece of these was written down before any price was seen: the
+# session hours and the closes rule in the owner's research notes (the earlier study's D5 and D6),
+# level quality in lesson 2. Only the act of combining them came after the first run.
+SESSION_HOURS = (7, 16)     # signal candle closes 07:00 to 16:00 New York time, Monday to Friday
+COMBINED = [
+    ("New York session only (07:00-16:00)", dict(session=True)),
+    ("Session + closes rule", dict(session=True, readings=("closes",))),
+    ("Session + level held at least twice", dict(session=True, min_turns=2)),
+    ("Session + closes rule + level held at least twice", dict(session=True, readings=("closes",), min_turns=2)),
+]
+# These two come from looking at the first run's tables. That is hindsight: they are here to be
+# watched with suspicion, not trusted.
+HINDSIGHT = [
+    ("Level held at least three times", dict(min_turns=3)),
+    ("Session + closes rule + level held at least three times", dict(session=True, readings=("closes",), min_turns=3)),
 ]
 
 
@@ -150,8 +169,15 @@ def session_of(utc_seconds: int) -> str:
     return "17-24 New York (evening)"
 
 
+def in_session(utc_seconds: int) -> bool:
+    """Monday to Friday, 07:00 to 16:00 New York time (both ends included)."""
+    local = datetime.fromtimestamp(utc_seconds, timezone.utc).astimezone(NEW_YORK)
+    minutes = local.hour * 60 + local.minute
+    return local.weekday() < 5 and SESSION_HOURS[0] * 60 <= minutes <= SESSION_HOURS[1] * 60
+
+
 def run_variant(bars, times, candles, readings: Readings, settings: dict) -> dict:
-    cfg = dict(BASE, **settings)
+    cfg = {**BASE, "session": False, **settings}
     trigger = Trigger(LevelBook(cfg["strength"]), cfg["min_body"], cfg["min_turns"])
     rows, skips = [], Counter()
     for candle in candles:
@@ -161,6 +187,9 @@ def run_variant(bars, times, candles, readings: Readings, settings: dict) -> dic
         if isinstance(result, Skip):
             skips[result.reason] += 1
         elif isinstance(result, Signal):
+            if cfg["session"] and not in_session(result.time):
+                skips["outside_session"] += 1
+                continue
             unit = trigger.book.reach / ZONE_SHARE
             rows.append(_row(bars, times, result.time, result.side, unit, seen,
                              body=result.body_share, turns=result.turns))
@@ -169,7 +198,7 @@ def run_variant(bars, times, candles, readings: Readings, settings: dict) -> dic
 
 def run_no_level(bars, times, candles, readings: Readings, settings: dict) -> dict:
     """Every convincing candle is a 'signal', level or no level: what the levels must beat."""
-    cfg = dict(BASE, **settings)
+    cfg = {**BASE, "session": False, **settings}
     heights, rows = [], []
     for candle in candles:
         heights.append(candle.range)
@@ -177,6 +206,8 @@ def run_no_level(bars, times, candles, readings: Readings, settings: dict) -> di
         if candle.body_share < cfg["min_body"] or not (candle.bullish or candle.bearish):
             continue
         side = BUY if candle.bullish else SELL
+        if cfg["session"] and not in_session(candle.close_time):
+            continue
         seen = readings.at(candle.close_time)
         if cfg["readings"] and not allows(combine(*[seen[name] for name in cfg["readings"]]), side):
             continue
@@ -234,7 +265,7 @@ def _line(name: str, s: dict) -> str:
 HEAD = "| | Signals | Win share | Average (units) | Likely range | Average, spread doubled |\n|---|---|---|---|---|---|"
 
 
-def report(facts: dict, variants: list, no_level: list) -> str:
+def report(facts: dict, variants: list, no_level: list, combined: list = (), hindsight: list = ()) -> str:
     out = ["# Signal check on the development part", "",
            "**Not a profit backtest.** The bot has no stop, target or size yet. This asks one question of the "
            "trigger alone: after a signal, which comes first, one unit our way or one unit against us? One unit "
@@ -244,14 +275,27 @@ def report(facts: dict, variants: list, no_level: list) -> str:
            "not a verdict." % (facts["first"], facts["last"]), "",
            "- One-minute bars: %d. Thirty-minute candles: %d. Median spread: %.2f." % (
                facts["bars"], facts["candles"], facts["median_spread"]),
-           "- Median unit: %.2f. So the spread costs about %.3f units per signal." % (
-               facts["median_unit"], facts["median_spread"] / facts["median_unit"] if facts["median_unit"] else 0),
+           "- Median unit: %.2f. So the spread costs about %.3f units per signal, and with no edge at all "
+           "the win share would be about %.1f%%." % (
+               facts["median_unit"], facts["median_spread"] / facts["median_unit"] if facts["median_unit"] else 0,
+               100 * (0.5 - facts["median_spread"] / (2 * facts["median_unit"])) if facts["median_unit"] else 50),
            "- Code version: `%s`." % facts["commit"],
            "- \"Likely range\" is a rough 95% range for the average. Signals overlap in time, so the true "
            "range is wider than shown.", "",
            "## One change at a time", "", HEAD]
     for name, result in variants:
         out.append(_line(name, summarise(result["rows"])))
+    if combined:
+        out += ["", "## Combinations", "",
+                "Each piece was written down before any price was seen (session hours and the closes rule in "
+                "the research notes, level quality in lesson 2). Compare each line with its no-level twin "
+                "in the next table.", "", HEAD]
+        out += [_line(name, summarise(result["rows"])) for name, result in combined]
+    if hindsight:
+        out += ["", "## Suggested by the first run (hindsight)", "",
+                "These were picked after seeing the first run's tables. A setting chosen because it looked "
+                "good will look good again on the same data. Watch, do not trust.", "", HEAD]
+        out += [_line(name, summarise(result["rows"])) for name, result in hindsight]
     out += ["", "## What the levels must beat", "",
             "The same test on every convincing candle, whether or not it broke a level. If these lines do as "
             "well as the ones above, the levels are adding nothing.", "", HEAD]
@@ -300,14 +344,17 @@ def check(bars: list[Bar]) -> tuple[str, dict]:
     readings = Readings(bars)
     variants = [(name, run_variant(bars, times, candles, readings, settings)) for name, settings in VARIANTS]
     no_level = [(name, run_no_level(bars, times, candles, readings, settings)) for name, settings in NO_LEVEL]
+    combined = [(name, run_variant(bars, times, candles, readings, settings)) for name, settings in COMBINED]
+    hindsight = [(name, run_variant(bars, times, candles, readings, settings)) for name, settings in HINDSIGHT]
     units = [row["unit"] for row in variants[0][1]["rows"]]
     iso = lambda t: datetime.fromtimestamp(t, timezone.utc).strftime("%Y-%m-%d")
     facts = {"first": iso(bars[0].time), "last": iso(bars[-1].time), "bars": len(bars), "candles": len(candles),
              "median_spread": median(bar.spread for bar in bars), "median_unit": median(units) if units else 0.0,
              "commit": _commit()}
     data = {"facts": facts,
-            "variants": {name: dict(summarise(r["rows"]), skips=r["skips"]) for name, r in variants + no_level}}
-    return report(facts, variants, no_level), data
+            "variants": {name: dict(summarise(r["rows"]), skips=r["skips"])
+                         for name, r in variants + no_level + combined + hindsight}}
+    return report(facts, variants, no_level, combined, hindsight), data
 
 
 def main(argv=None) -> int:

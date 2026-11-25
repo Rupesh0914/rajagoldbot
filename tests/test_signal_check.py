@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from rajabot.candles import Bar
 from rajabot.data import read_mt5_bars, server_to_utc
 from rajabot.direction import BUY, SELL
-from research.signal_check import DEVELOPMENT_ENDS, check, follow
+from research.signal_check import DEVELOPMENT_ENDS, check, follow, in_session
 
 
 def utc(*parts) -> int:
@@ -63,6 +63,17 @@ class Follow(unittest.TestCase):
         self.assertIsNone(self.outcome([(3000, 3010, 2990, 3000)], BUY, signal=self.T - 301))
         self.assertIsNotNone(self.outcome([(3000, 3010, 2990, 3000)], BUY, signal=self.T - 300))
         self.assertIsNone(self.outcome([(3000, 3010, 2990, 3000)], BUY, unit=0.0))
+
+
+class Session(unittest.TestCase):
+    def test_seven_to_four_new_york_on_weekdays(self):
+        # Tuesday 2025-03-04, New York is UTC-5
+        self.assertFalse(in_session(utc(2025, 3, 4, 11, 59)))       # 06:59
+        self.assertTrue(in_session(utc(2025, 3, 4, 12, 0)))         # 07:00
+        self.assertTrue(in_session(utc(2025, 3, 4, 21, 0)))         # 16:00
+        self.assertFalse(in_session(utc(2025, 3, 4, 21, 1)))        # 16:01
+        self.assertFalse(in_session(utc(2025, 3, 8, 15, 0)))        # Saturday
+        self.assertTrue(in_session(utc(2025, 7, 1, 11, 0)))         # summer: 07:00 New York is 11:00 UTC
 
 
 class Reader(unittest.TestCase):
@@ -121,6 +132,12 @@ class TheCheck(unittest.TestCase):
         self.assertTrue(0.42 < every_candle["win_share"] < 0.52, every_candle["win_share"])
         self.assertTrue(-0.15 < every_candle["average"] < 0.03, every_candle["average"])
         self.assertLess(every_candle["average_2x"], every_candle["average"])       # more spread, worse result
+        self.assertIn("## Combinations", text)
+        self.assertIn("## Suggested by the first run (hindsight)", text)
+        in_hours = data["variants"]["New York session only (07:00-16:00)"]
+        base = data["variants"]["Base: strength 4, body 50%, any level, no direction filter"]
+        self.assertTrue(0 < in_hours["signals"] < base["signals"])
+        self.assertGreater(in_hours["skips"]["outside_session"], 0)
 
     def test_it_refuses_history_past_the_development_part(self):
         bars = random_walk(10, seed=1, start=DEVELOPMENT_ENDS - 5 * 86400)
