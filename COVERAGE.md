@@ -119,6 +119,8 @@ may be tuned on test results: Lesson 9 fixes them before the data is seen.
 | 8 | Sideways | Progress under 0.20 over 12 candles | Our choice. Switched off |
 | 8 | Rejection wick | At least twice the body | From the notes' candidates (1.5, 2, 3). Switched off |
 | 8 | Daily limits | 5 trades, 3R lost, 3 losses in a row | From the Sugarwood bot |
+| 9 | Which version is judged | The validation part chooses among four, by highest average R with at least 100 trades | Fixed in `research/PROTOCOL.md` |
+| 9 | Pass marks | 100 trades, profit factor 1.20, fall 15%, 1.05 with spreads doubled, range above 0 | From the notes, unchanged |
 
 ## Where the notes disagree with themselves
 

@@ -31,7 +31,7 @@ share of the account, and be out by the end of the New York day.
 | 6 | [Stop loss, costs and how much to risk](lessons/06-stop-costs-and-size.md) | `rajabot/risk.py` | Done |
 | 7 | [Managing the trade: partial closes, break-even, going flat](lessons/07-managing-the-trade.md) | `rajabot/manage.py` | Done |
 | 8 | [When not to trade: sideways markets, hours, news, daily safety limits](lessons/08-when-not-to-trade.md) | `rajabot/filters.py` | Done |
-| 9 | Honest testing: a backtest that cannot fool us | `rajabot/backtest/` | Next |
+| 9 | [Honest testing: a backtest that cannot fool us](lessons/09-honest-testing.md) | `rajabot/engine.py`, `research/final_test.py` | Rules frozen; test running |
 | 10 | Connecting to MetaTrader 5 on a demo account | `mt5/` | |
 | 11 | Watching it: journal and daily report | `rajabot/journal.py` | |
 

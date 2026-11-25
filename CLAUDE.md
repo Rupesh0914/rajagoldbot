@@ -16,6 +16,7 @@ Guidance for any assistant working in this repo.
   past output does not change when later data arrives.
 - Price history is split in `research/DATA_SPLIT.md`. Ideas may be tried, fixed and tried again
   on the development part only. Never load, print or summarise a bar from the validation or
-  holdout parts: they are opened once each, in lesson 9. A development result is a clue, never
-  called proof.
+  holdout parts by any means other than `research/final_test.py`, which opens each once under
+  the frozen rules in `research/PROTOCOL.md`. Never edit `PROTOCOL.md` or the candidates in
+  `final_test.py`. A development result is a clue, never called proof.
 - Standard-library Python (plus `tzdata`). Tests: `python -m unittest discover -s tests -t .`

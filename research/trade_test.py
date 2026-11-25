@@ -169,7 +169,7 @@ def run_setup(bars: list[Bar], times: list[int], candles, readings: Readings, se
             index += 1
         if position.open:
             skips["history_ended"] += 1
-            continue
+            break                                      # still in a trade when the history ends: nothing after it can be taken
         closed_at = position.fills[-1].time
         busy_until = closed_at + 60
         trades.append({"time": first.time, "side": plan.side, "r": position.result_r, "reason": position.last_reason,

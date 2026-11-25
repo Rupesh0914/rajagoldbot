@@ -52,6 +52,16 @@ A real edge has to stand clear of that.
 - This is the development part. Fixing a weakness found here and checking again is allowed, and
   is the point. It is not proof.
 
+## The final test
+
+`final_test.py` runs the two stages fixed in [PROTOCOL.md](PROTOCOL.md): validation, then
+holdout, once each. It is the only tool allowed to read past the development part.
+
+```
+python -m research.final_test --bars PATH_TO\bars_m1.csv --stage validation --out data\final
+python -m research.final_test --bars PATH_TO\bars_m1.csv --stage holdout --out data\final
+```
+
 ## Trade test
 
 From Lesson 7 the bot can run a whole trade, so this test gives results in R. For every signal it

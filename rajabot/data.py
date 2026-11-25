@@ -19,13 +19,14 @@ def server_to_utc(server_seconds: int) -> int:
     return int(new_york.timestamp())
 
 
-def read_mt5_bars(path: str | Path, point: float = 0.01, before: int | None = None) -> list[Bar]:
+def read_mt5_bars(path: str | Path, point: float = 0.01, before: int | None = None,
+                  not_before: int | None = None) -> list[Bar]:
     """One-minute bars from an MT5 export CSV, oldest first.
 
     Columns: server_time (seconds on the broker's clock), open, high, low, close, tick_volume,
     spread (in points). `point` is the size of one point as a price (0.01 for gold at most
     brokers). Rows out of time order or repeated are dropped. With `before` (UTC seconds), bars at
-    or after that moment are never loaded at all.
+    or after that moment are never loaded at all. With `not_before`, earlier bars are left out.
     """
     if point <= 0:
         raise ValueError("point must be positive")
@@ -50,5 +51,6 @@ def read_mt5_bars(path: str | Path, point: float = 0.01, before: int | None = No
             if before is not None and time >= before:
                 break
             last = time
-            bars.append(row)
+            if not_before is None or time >= not_before:
+                bars.append(row)
     return bars
