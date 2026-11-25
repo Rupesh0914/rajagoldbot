@@ -22,8 +22,8 @@ share of the account, and be out by the end of the New York day.
 | # | Lesson | Bot piece | Status |
 |---|---|---|---|
 | 1 | [Candles and timeframes](lessons/01-candles-and-timeframes.md) | `rajabot/candles.py` | Done |
-| 2 | Levels: where price turned before | `rajabot/levels.py` | Next |
-| 3 | Direction: reading the 4-hour chart | `rajabot/direction.py` | |
+| 2 | [Levels: where price turned before](lessons/02-levels.md) | `rajabot/levels.py` | Done |
+| 3 | Direction: reading the 4-hour chart | `rajabot/direction.py` | Next |
 | 4 | The trigger: a 30-minute close through a level | `rajabot/trigger.py` | |
 | 5 | Room to run: is there open space ahead? | `rajabot/space.py` | |
 | 6 | Stop loss and how much to risk | `rajabot/risk.py` | |
@@ -53,8 +53,9 @@ python -m pip install -r requirements.txt
 python -m unittest discover -s tests -t .
 ```
 
-Try the lesson 1 piece:
+Try the pieces built so far:
 
 ```
-python -m rajabot candle 3750 3758 3748 3756
+python -m rajabot candle 3750 3758 3748 3756     # lesson 1: read one candle
+python -m rajabot levels                         # lesson 2: watch levels appear and break
 ```
