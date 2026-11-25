@@ -45,6 +45,18 @@ LESSON_2_TWICE = _half_hours(datetime(2026, 11, 10, 13, 0, tzinfo=timezone.utc),
     (3753.0, 3754.0, 3748.0, 3749.0),      # 13:00
 ])
 
+# Lesson 4. Both start as LESSON_2 and change only what happens at the 3761 ceiling.
+# The wick: the 12:00 candle spikes to 3764 but closes back under the ceiling.
+LESSON_4_WICK = LESSON_2[:8] + _half_hours(datetime(2026, 11, 10, 17, 0, tzinfo=timezone.utc), [
+    (3756.0, 3764.0, 3755.0, 3760.0),      # 12:00  pokes through, closes at 3760
+    (3760.0, 3762.0, 3756.0, 3757.0),      # 12:30
+])
+# The weak candle: the 12:00 candle runs to 3768, is sold back, and closes only just above.
+LESSON_4_WEAK = LESSON_2[:8] + _half_hours(datetime(2026, 11, 10, 17, 0, tzinfo=timezone.utc), [
+    (3756.0, 3768.0, 3755.0, 3761.5),      # 12:00  closes above 3761, but most of the candle is wick
+    (3761.5, 3763.0, 3757.0, 3758.0),      # 12:30
+])
+
 FOUR_HOURS = 4 * 3600
 
 

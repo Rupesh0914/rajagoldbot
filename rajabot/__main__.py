@@ -7,8 +7,9 @@ from datetime import datetime, timezone
 from .candles import NEW_YORK, Candle, describe
 from .direction import DEFAULT_LOOKBACK, STRUCTURE_STRENGTH, direction, structure
 from .direction import explain
-from .examples import LESSON_2, LESSON_2_TWICE, LESSON_3
+from .examples import LESSON_2, LESSON_2_TWICE, LESSON_3, LESSON_4_WEAK, LESSON_4_WICK
 from .levels import HIGH, LevelBook, find_swings
+from .trigger import DEFAULT_MIN_BODY, Signal, Skip, Trigger
 
 
 def _new_york(utc_seconds: int) -> str:
@@ -43,6 +44,39 @@ def levels_story(candles: list[Candle], strength: int) -> list[str]:
     return lines
 
 
+SKIP_WORDS = {
+    "both_ways": "it broke a ceiling and a floor at once",
+    "weak_candle": "the candle is not convincing",
+    "against_direction": "the direction does not agree",
+    "weak_level": "price has not turned at this level often enough",
+}
+
+
+def trigger_story(candles: list[Candle], direction: str | None, min_body: float, min_turns: int,
+                  strength: int = 2) -> list[str]:
+    """Walk through candles one close at a time and say when there is a signal, a skip or nothing."""
+    trigger = Trigger(LevelBook(strength), min_body, min_turns)
+    lines = ["Direction: %s. Body needed: %d%% of the candle. Turns needed at the level: %d." % (
+        direction or "filter off", round(100 * min_body), min_turns), ""]
+    for candle in candles:
+        before = list(trigger.book.levels)
+        result = trigger.on_candle(candle, direction)
+        lines.append("%s candle (high %.2f, low %.2f) closed at %.2f, %d%% body" % (
+            _new_york(candle.time), candle.high, candle.low, candle.close, round(100 * candle.body_share)))
+        for level in before:
+            went_past = candle.high > level.price if level.kind == HIGH else candle.low < level.price
+            if went_past and level in trigger.book.levels:
+                lines.append("    Went through the %s at %.2f but closed back. A wick is not a break. No signal." % (
+                    level.name, level.price))
+        if isinstance(result, Signal):
+            lines.append("    SIGNAL at %s: %s. Closed through the %s at %.2f." % (
+                _new_york(result.time), result.side.upper(), result.level.name, result.level.price))
+        elif isinstance(result, Skip):
+            where = " at %.2f" % result.level.price if result.level else ""
+            lines.append("    SKIPPED: broke the level%s, but %s. The level is used up." % (where, SKIP_WORDS[result.reason]))
+    return lines
+
+
 def structure_story(candles: list[Candle], strength: int) -> list[str]:
     """Show the peaks and dips of the lesson's 4-hour example and what they add up to."""
     lines = []
@@ -66,6 +100,15 @@ def main(argv: list[str] | None = None) -> int:
     levels.add_argument("--example", choices=("break", "twice"), default="break",
                         help="break: the ceiling gets broken. twice: price turns at the same area twice")
     commands.add_parser("structure", help="Lesson 3: peaks and dips stepping up, in the lesson's 4-hour example")
+    trigger = commands.add_parser("trigger", help="Lesson 4: signal, skip or nothing in the lesson's examples")
+    trigger.add_argument("--example", choices=("break", "wick", "weak"), default="break",
+                         help="break: a clean close through. wick: pokes through, closes back. weak: closes through on a poor candle")
+    trigger.add_argument("--direction", choices=("up", "down", "off"), default="up",
+                         help="the direction reading from lesson 3 (off = filter switched off)")
+    trigger.add_argument("--min-body", type=float, default=DEFAULT_MIN_BODY,
+                         help="share of the candle that must be body (default %.2f)" % DEFAULT_MIN_BODY)
+    trigger.add_argument("--min-turns", type=int, default=1,
+                         help="times price must have turned at the level (default 1 = any level)")
     direction = commands.add_parser("direction", help="Lesson 3: which way, from 4-hour closing prices (oldest first)")
     direction.add_argument("closes", type=float, nargs="+", help="closing prices of closed 4-hour candles, oldest first")
     direction.add_argument("--lookback", type=int, default=DEFAULT_LOOKBACK,
@@ -81,6 +124,14 @@ def main(argv: list[str] | None = None) -> int:
             parser.error("strength must be 1 or more")
         example = LESSON_2 if args.example == "break" else LESSON_2_TWICE
         print("\n".join(levels_story(example, args.strength)))
+    elif args.command == "trigger":
+        if not 0 < args.min_body <= 1:
+            parser.error("--min-body is a share: above 0, at most 1")
+        if args.min_turns < 1:
+            parser.error("--min-turns must be 1 or more")
+        example = {"break": LESSON_2, "wick": LESSON_4_WICK, "weak": LESSON_4_WEAK}[args.example]
+        reading = None if args.direction == "off" else args.direction
+        print("\n".join(trigger_story(example, reading, args.min_body, args.min_turns)))
     elif args.command == "structure":
         print("\n".join(structure_story(LESSON_3, STRUCTURE_STRENGTH)))
     elif args.command == "direction":

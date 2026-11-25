@@ -64,7 +64,7 @@ turned into something measured. This table tracks how far that has got.
 | A level is an area, and some areas have held many times | Turns at a level, within half an average candle | 2 | Built, as an option |
 | Candles stepping up or down | Last two peaks and last two dips on the 4-hour chart | 3 | Built, as an option |
 | The weekly and daily background | Daily close against a week earlier | 3 | Built, as an option |
-| A strong, convincing breakout candle | Share of the candle that is body | 4 | Planned |
+| A strong, convincing breakout candle | Share of the candle that is body, and closing in the direction of the break | 4 | Built |
 | Open space ahead, or a wall close by | Distance to the next level against the stop | 5 | Planned |
 | A market going sideways | Overlapping candles, mixed structure | 8 | Structure built; the rest planned |
 | A rejection wick warning that a move is tiring | Wick against the move, measured against the body | 8 | Planned |
@@ -95,6 +95,9 @@ may be tuned on test results: Lesson 9 fixes them before the data is seen.
 | 3 | Structure rule | Last two peaks and dips on the 4-hour chart, strength 2 | Our choice |
 | 3 | Daily background | Last daily close against the close 5 candles earlier | Our choice |
 | 3 | Which direction readings are switched on | Combinations tested | Decided in Lesson 9 |
+| 4 | How much of the signal candle must be body | 50%, 65% or 80% | Candidates from the notes; one is fixed in Lesson 9 |
+| 4 | Signal level when one candle breaks several | The furthest one broken | Our choice |
+| 4 | A level broken by a candle that fails a check | Used up, no second chance | Our choice |
 
 ## Where the notes disagree with themselves
 

@@ -71,5 +71,33 @@ class StructureCommand(unittest.TestCase):
         self.assertTrue(out.endswith("Closes rule (lesson 3, section 4): up"))
 
 
+class TriggerCommand(unittest.TestCase):
+    def test_the_clean_break_is_a_buy_signal(self):
+        out = run("trigger")
+        self.assertIn("SIGNAL at 12:30: BUY. Closed through the ceiling at 3761.00.", out)
+        self.assertNotIn("SKIPPED", out)
+
+    def test_the_wick_is_nothing(self):
+        out = run("trigger", "--example", "wick")
+        self.assertIn("A wick is not a break. No signal.", out)
+        self.assertNotIn("SIGNAL at", out)
+        self.assertNotIn("SKIPPED", out)
+
+    def test_the_weak_candle_is_skipped(self):
+        out = run("trigger", "--example", "weak")
+        self.assertIn("SKIPPED: broke the level at 3761.00, but the candle is not convincing.", out)
+
+    def test_direction_and_level_quality_options(self):
+        self.assertIn("the direction does not agree", run("trigger", "--direction", "down"))
+        self.assertIn("SIGNAL at 12:30: BUY", run("trigger", "--direction", "off"))
+        self.assertIn("has not turned at this level often enough", run("trigger", "--min-turns", "2"))
+        self.assertIn("the candle is not convincing", run("trigger", "--min-body", "0.8"))
+
+    def test_bad_settings_are_refused(self):
+        for bad in (("--min-body", "0"), ("--min-body", "1.5"), ("--min-turns", "0")):
+            with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+                run("trigger", *bad)
+
+
 if __name__ == "__main__":
     unittest.main()
