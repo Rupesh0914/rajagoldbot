@@ -115,5 +115,27 @@ class RoomCommand(unittest.TestCase):
             run("room", "--min-ratio", "0")
 
 
+class PlanAndSizeCommands(unittest.TestCase):
+    def test_the_lesson_six_plan(self):
+        out = run("plan")
+        self.assertIn("BUY 0.05 lots.", out)
+        self.assertIn("Entry 3762.20. Stop 3753.80. Distance 8.40.", out)
+        self.assertIn("If stopped out: -42.00, which is 0.42% of the account. That is 1R.", out)
+        self.assertIn("Room is 1.52 times the risk.", out)
+
+    def test_a_canadian_account_and_a_small_account(self):
+        out = run("plan", "--usd-rate", "1.40", "--currency", "CAD")
+        self.assertIn("BUY 0.04 lots.", out)
+        self.assertIn("-47.04 CAD", out)
+        self.assertIn("NO TRADE: size below min", run("plan", "--balance", "500"))
+
+    def test_size(self):
+        self.assertEqual(run("size", "50", "8.4"),
+                         "0.05 lots. If stopped out: -42.00. Each dollar gold moves is worth 5.00.")
+        self.assertTrue(run("size", "5", "8.4").startswith("No trade"))
+        with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+            run("plan", "--risk", "6")
+
+
 if __name__ == "__main__":
     unittest.main()

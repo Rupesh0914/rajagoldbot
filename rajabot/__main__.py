@@ -10,6 +10,8 @@ from .direction import explain
 from .examples import (LESSON_2, LESSON_2_TWICE, LESSON_3, LESSON_4_WEAK, LESSON_4_WICK, LESSON_5_ROOM,
                        LESSON_5_TIGHT)
 from .levels import HIGH, LevelBook, find_swings
+from .levels import ZONE_SHARE
+from .risk import DEFAULT_RISK_SHARE, Contract, NoTrade, describe_plan, plan_trade, position_size
 from .space import DEFAULT_MIN_RATIO, describe_room, measure_room
 from .trigger import DEFAULT_MIN_BODY, Signal, Skip, Trigger
 
@@ -96,6 +98,28 @@ def room_story(candles: list[Candle], min_ratio: float, allow_open_space: bool, 
     return lines
 
 
+def plan_story(candles: list[Candle], balance: float, risk_percent: float, spread: float, usd_rate: float,
+               currency: str, strength: int = 2) -> list[str]:
+    """Find the signal in an example and work out entry, stop and size for it."""
+    trigger = Trigger(LevelBook(strength))
+    contract = Contract(usd_to_account=usd_rate)
+    for candle in candles:
+        result = trigger.on_candle(candle)
+        if isinstance(result, Signal):
+            average = trigger.book.reach / ZONE_SHARE
+            lines = ["%s SIGNAL: closed at %.2f through the %s at %.2f. Candle low %.2f, high %.2f." % (
+                         result.side.upper(), candle.close, result.level.name, result.level.price, candle.low, candle.high),
+                     "Next minute: chart price %.2f, spread %.2f. Account %.2f%s, risking %.2f%%." % (
+                         candle.close, spread, balance, (" " + currency) if currency else "", risk_percent),
+                     ""]
+            plan = plan_trade(result, candle.close, spread, balance, average, contract, risk_percent / 100)
+            lines.append(describe_plan(plan, balance, currency))
+            if not isinstance(plan, NoTrade):
+                lines += ["", describe_room(measure_room(result, trigger.book, plan.entry, plan.distance)).split("\n", 1)[1]]
+            return lines
+    return ["No signal in this example."]
+
+
 def structure_story(candles: list[Candle], strength: int) -> list[str]:
     """Show the peaks and dips of the lesson's 4-hour example and what they add up to."""
     lines = []
@@ -134,6 +158,18 @@ def main(argv: list[str] | None = None) -> int:
     room.add_argument("--min-ratio", type=float, default=DEFAULT_MIN_RATIO,
                       help="room needed, as a multiple of the risk (default %.1f)" % DEFAULT_MIN_RATIO)
     room.add_argument("--no-open-space", action="store_true", help="skip signals with no level ahead to aim at")
+    plan = commands.add_parser("plan", help="Lesson 6: entry, stop and size for the lesson's signal")
+    plan.add_argument("--balance", type=float, default=10000.0, help="account balance (default 10000)")
+    plan.add_argument("--risk", type=float, default=100 * DEFAULT_RISK_SHARE,
+                      help="percent of the account to risk (default %.1f)" % (100 * DEFAULT_RISK_SHARE))
+    plan.add_argument("--spread", type=float, default=0.20, help="spread in dollars (default 0.20)")
+    plan.add_argument("--usd-rate", type=float, default=1.0,
+                      help="what one US dollar is worth in the account's currency (1.40 for a Canadian-dollar account at 1.40)")
+    plan.add_argument("--currency", default="", help="label for the money lines, for example CAD")
+    size = commands.add_parser("size", help="Lesson 6: lots for a given risk and stop distance")
+    size.add_argument("risk_money", type=float, help="money you accept losing on the trade")
+    size.add_argument("distance", type=float, help="entry to stop, in dollars of gold price")
+    size.add_argument("--usd-rate", type=float, default=1.0, help="what one US dollar is worth in the account's currency")
     direction = commands.add_parser("direction", help="Lesson 3: which way, from 4-hour closing prices (oldest first)")
     direction.add_argument("closes", type=float, nargs="+", help="closing prices of closed 4-hour candles, oldest first")
     direction.add_argument("--lookback", type=int, default=DEFAULT_LOOKBACK,
@@ -162,6 +198,21 @@ def main(argv: list[str] | None = None) -> int:
             parser.error("--min-ratio must be positive")
         example = {"room": LESSON_5_ROOM, "tight": LESSON_5_TIGHT, "open": LESSON_2}[args.example]
         print("\n".join(room_story(example, args.min_ratio, not args.no_open_space)))
+    elif args.command == "plan":
+        if args.balance <= 0 or not 0 < args.risk <= 5 or args.spread < 0 or args.usd_rate <= 0:
+            parser.error("balance and usd-rate must be positive, risk above 0 and at most 5 percent, spread not negative")
+        print("\n".join(plan_story(LESSON_5_ROOM, args.balance, args.risk, args.spread, args.usd_rate, args.currency)))
+    elif args.command == "size":
+        if args.risk_money <= 0 or args.distance <= 0 or args.usd_rate <= 0:
+            parser.error("risk, distance and usd-rate must all be positive")
+        contract = Contract(usd_to_account=args.usd_rate)
+        lots = position_size(args.risk_money, args.distance, contract)
+        if lots <= 0:
+            print("No trade: even 0.01 lots would lose %.2f, more than the %.2f allowed." % (
+                args.distance * contract.money_per_dollar(0.01), args.risk_money))
+        else:
+            print("%.2f lots. If stopped out: -%.2f. Each dollar gold moves is worth %.2f." % (
+                lots, args.distance * contract.money_per_dollar(lots), contract.money_per_dollar(lots)))
     elif args.command == "structure":
         print("\n".join(structure_story(LESSON_3, STRUCTURE_STRENGTH)))
     elif args.command == "direction":

@@ -51,24 +51,25 @@ class Room:
         return self.distance / self.risk
 
 
-def measure_room(signal: Signal, book: LevelBook, entry: float | None = None) -> Room:
+def measure_room(signal: Signal, book: LevelBook, entry: float | None = None, risk: float | None = None) -> Room:
     """Measure the room ahead of a signal, using only levels standing at that moment.
 
     Call it right after the signal candle was fed to the book, so the level just broken is gone
-    and anything that candle confirmed is in. `entry` defaults to the signal candle's close; the
-    real entry is a minute later and a spread away (lesson 6).
+    and anything that candle confirmed is in. `entry` defaults to the signal candle's close and
+    `risk` to the distance back to the candle's far end. Once lesson 6 has worked out the real
+    entry and stop, pass those: `entry=plan.entry, risk=plan.distance`.
     """
     candle = signal.candle
     price = candle.close if entry is None else entry
     if signal.side == BUY:
         ahead = book.ceilings_above(price)
-        risk = price - candle.low
+        estimate = price - candle.low
     elif signal.side == SELL:
         ahead = book.floors_below(price)
-        risk = candle.high - price
+        estimate = candle.high - price
     else:
         raise ValueError("side must be 'buy' or 'sell'")
-    return Room(signal.side, price, risk, ahead[0] if ahead else None)
+    return Room(signal.side, price, estimate if risk is None else risk, ahead[0] if ahead else None)
 
 
 def check_room(room: Room, min_ratio: float = DEFAULT_MIN_RATIO, allow_open_space: bool = True) -> str | None:

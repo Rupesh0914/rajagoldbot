@@ -101,6 +101,12 @@ may be tuned on test results: Lesson 9 fixes them before the data is seen.
 | 5 | What counts as a wall | The nearest standing 30-minute ceiling above a buy, floor below a sell | Our choice |
 | 5 | Room needed | 1.0, 1.5 or 2.0 times the risk | Candidates from the notes; one is fixed in Lesson 9 |
 | 5 | Open space, with no level ahead | Allowed, or skipped | Decided in Lesson 9 |
+| 6 | Where the stop goes | Beyond the far end of the signal candle | From the notes (prior candle or structure) |
+| 6 | Stop buffer | One spread (a sell adds one more, because it closes at the ask) | Our choice; the notes list 0, 2 or 5 ticks as candidates |
+| 6 | Risk per trade | 0.5% of the account | Our choice, deliberately below the 1% to 2% in the notes |
+| 6 | Stop too wide | More than 3 average candles | Our choice |
+| 6 | Stop too tight | Less than 6 spreads | Our choice |
+| 6 | Lot rounding | Always down | Our choice |
 
 ## Where the notes disagree with themselves
 
