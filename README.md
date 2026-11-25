@@ -74,5 +74,7 @@ Try the pieces built so far:
 ```
 python -m rajabot candle 3750 3758 3748 3756     # lesson 1: read one candle
 python -m rajabot levels                         # lesson 2: watch levels appear and break
+python -m rajabot levels --example twice         # lesson 2: a level that held twice
 python -m rajabot direction 3700 3710 3705 3720 3730 3725 3740    # lesson 3: which way?
+python -m rajabot structure                      # lesson 3: peaks and dips stepping up
 ```

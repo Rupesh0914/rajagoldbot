@@ -11,8 +11,8 @@ It is updated with every lesson.
 
 | Rule | What the notes say | Where it is covered |
 |---|---|---|
-| R01 | Read weekly, daily and 4-hour charts before acting on 1-hour or 30-minute | Lesson 3. The bot uses the 4-hour chart. Weekly and daily are taught for the eye; using the daily chart as a bot filter is a later candidate |
-| R02 | Mark nearby support and resistance; look at the candles to the left | Lesson 2 |
+| R01 | Read weekly, daily and 4-hour charts before acting on 1-hour or 30-minute | Lesson 3. The bot reads the 4-hour chart two ways and the daily chart one way. The weekly chart is taught for the eye only |
+| R02 | Mark nearby support and resistance; look at the candles to the left | Lesson 2. "Candles to the left" is the level-quality count in section 8 |
 | R03 | Check for clean space to the next obstacle before entering | Lesson 5 |
 | R04 | A break or close beyond a level, for continuation | Lesson 4 (close version). The break-before-close version is Lesson 14 |
 | R05 | Support is a down candle followed by an up candle; resistance the reverse | Lesson 2 (section 6), used fully in Lesson 12 |
@@ -54,6 +54,27 @@ It is updated with every lesson.
 | The link to MetaTrader 5 on a demo account, and what happens if the PC sleeps or restarts | Lesson 10 |
 | A journal of every trade and every skipped signal, and a daily report | Lesson 11 |
 
+## What an eye sees, and what the bot measures
+
+The bot does not look at a chart the way a person does. Each thing an eye picks up has to be
+turned into something measured. This table tracks how far that has got.
+
+| What an eye sees | What the bot measures | Lesson | Status |
+|---|---|---|---|
+| A level is an area, and some areas have held many times | Turns at a level, within half an average candle | 2 | Built, as an option |
+| Candles stepping up or down | Last two peaks and last two dips on the 4-hour chart | 3 | Built, as an option |
+| The weekly and daily background | Daily close against a week earlier | 3 | Built, as an option |
+| A strong, convincing breakout candle | Share of the candle that is body | 4 | Planned |
+| Open space ahead, or a wall close by | Distance to the next level against the stop | 5 | Planned |
+| A market going sideways | Overlapping candles, mixed structure | 8 | Structure built; the rest planned |
+| A rejection wick warning that a move is tiring | Wick against the move, measured against the body | 8 | Planned |
+| "This one just looks wrong" | Nothing. Some judgement cannot be written as a rule | | See below |
+
+Every option is switched on or off by the honest test in Lesson 9, on two years of history, not
+by opinion. Once the bot can produce trades, the owner reviews about 50 chart pictures drawn at
+random from that history in one sitting, as a check that the bot's trades look like trades a
+person would take.
+
 ## Numbers we had to choose
 
 Raja trades by eye. The notes record no exact number for most of what he does, so a bot has to
@@ -68,8 +89,12 @@ may be tuned on test results: Lesson 9 fixes them before the data is seen.
 | 2 | Swing strength | 2, 4 or 8 candles each side | Candidates; one is fixed in Lesson 9 |
 | 2 | Level age limit | 7 days | Our choice |
 | 2 | What breaks a level | A 30-minute close beyond it | From the notes (one of two versions) |
-| 3 | Direction rule | Last 4-hour close against the close 6 candles earlier | Our choice |
-| 3 | Direction filter on or off | Both tested | Decided in Lesson 9 |
+| 2 | How close two turns must be to count as one area | Half the average height of the last 20 candles | Our choice |
+| 2 | Minimum turns at a level before trading it | 1 (off) or 2 | Decided in Lesson 9 |
+| 3 | Closes rule | Last 4-hour close against the close 6 candles earlier | Our choice |
+| 3 | Structure rule | Last two peaks and dips on the 4-hour chart, strength 2 | Our choice |
+| 3 | Daily background | Last daily close against the close 5 candles earlier | Our choice |
+| 3 | Which direction readings are switched on | Combinations tested | Decided in Lesson 9 |
 
 ## Where the notes disagree with themselves
 

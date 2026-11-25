@@ -67,18 +67,80 @@ Example. The last seven 4-hour closes, oldest first:
 3740 is above 3700, so the direction is up and the bot looks for buys only. The dips in the
 middle (3705, 3725) do not matter. Only the two ends are compared.
 
-## 5. Be honest about this rule
+## 5. A second reading: structure
 
-- **Raja gives no formula.** He reads direction by eye. The rule above is our stand-in, and the
-  number six is our choice, not his.
-- **It is late at turns.** After a long climb, gold can fall for hours before the rule flips to
+The rule above compares two prices and ignores everything between them. Your eye does more: it
+sees the peaks and dips and whether they are stepping up or down. The bot can do that too, using
+the swings from Lesson 2 on the 4-hour chart.
+
+> Take the last two peaks (swing highs) and the last two dips (swing lows).
+> Newer peak higher **and** newer dip higher: structure is **up**.
+> Newer peak lower **and** newer dip lower: structure is **down**.
+> Anything else: **mixed**. No trades.
+
+```
+                             peak 3731
+       peak 3715                /\
+          /\                   /  \
+         /  \                 /    \
+        /    \               /      dip 3712
+       /      \             /
+      /        \___________/
+                dip 3697
+```
+
+Both peaks and both dips are stepping up, so structure is up. See it with:
+
+```
+python -m rajabot structure
+```
+
+A peak or dip counts only after the candles following it have closed, exactly as in Lesson 2. So
+this reading is slower than the closes rule, but one big candle sways it less.
+
+"Mixed" is useful. A higher peak with a lower dip is a market widening out with no clear
+direction, which is the kind of market this strategy should leave alone.
+
+## 6. A third reading: the daily background
+
+The 4-hour chart can point up inside a week that is falling. To see the background, the bot asks
+the same question one size bigger:
+
+> Is the last closed **daily** candle higher or lower than the daily close five candles earlier?
+
+Five daily candles are one trading week. So: **is gold higher or lower than a week ago?**
+
+The daily candles are the broker's: each runs from 17:00 to 17:00 New York time, five a week.
+
+## 7. Three readings, one decision
+
+| Reading | Question it asks |
+|---|---|
+| Closes | Higher or lower than a day ago? |
+| Structure | Are the peaks and dips stepping up or down? |
+| Daily | Higher or lower than a week ago? |
+
+When several readings are switched on, the bot trades only when **all of them agree**. Any
+disagreement means no trade. More readings switched on means fewer trades and, if the readings
+are any good, cleaner ones.
+
+Which readings to switch on is not chosen by feel. Lesson 9 tests the combinations and keeps the
+one that earns its place.
+
+## 8. Be honest about these rules
+
+- **Raja gives no formula.** He reads direction by eye. These rules are our stand-ins, and the
+  numbers in them (six candles, five days, two peaks) are our choices, not his.
+- **They are late at turns.** After a long climb, gold can fall for hours before a rule flips to
   down. Every direction rule has this cost.
-- **It flip-flops when gold goes sideways.** Up one candle, down the next. Sideways markets are
+- **The closes rule flip-flops when gold goes sideways.** Up one candle, down the next. Sideways markets are
   where this strategy loses, and Lesson 8 adds rules for staying out of them.
-- **It may not help.** Lesson 9 tests the bot with this filter on and with it off. If it does not
-  earn its place, it goes.
+- **They may not help.** Lesson 9 tests the bot with each reading on and off. One that does not
+  earn its place goes.
+- **They are still not an eye.** They catch the stepping pattern and the background. They do not
+  see rejection wicks or a market going sideways yet. Those come in Lesson 8.
 
-## 6. Still closed candles only
+## 9. Still closed candles only
 
 The 4-hour candle that is forming right now is not counted. Halfway through it, price can be far
 above yesterday and still finish below. The bot waits for the 4-hour candle to close, the same
@@ -89,9 +151,10 @@ The 4-hour candles are the ones on your broker's chart: they close at 21:00, 01:
 
 ## What the bot piece does
 
-`rajabot/direction.py` takes the closed 4-hour candles and answers `up`, `down`, `flat` or
-`unknown`. It also answers the question the later lessons will ask: "is a buy allowed right
-now?" (only when up) and "is a sell allowed?" (only when down).
+`rajabot/direction.py` gives three readings: the closes rule and the structure of the 4-hour
+chart, and the daily background. It combines the ones that are switched on into a single answer,
+and then answers the question the later lessons will ask: "is a buy allowed right now?" (only
+when up) and "is a sell allowed?" (only when down).
 
 Its tests check that a candle still forming never changes the answer, even if price spikes
 inside it.
@@ -119,6 +182,10 @@ and the rule disagree are the ones to study.
    the direction?
 4. Only five 4-hour candles of history are available. What does the bot do?
 5. On which chart does Raja say most of his trade ideas come from, and on which does he act?
+6. The last two 4-hour peaks were 3790 then 3805. The last two dips were 3770 then 3762. What is
+   the structure?
+7. The closes rule says up, structure says up, the daily background says down, and all three are
+   switched on. Does the bot buy?
 
 <details>
 <summary>Answers</summary>
@@ -128,6 +195,8 @@ and the rule disagree are the ones to study.
 3. No. That candle has not closed. Only closed candles count.
 4. Nothing. With fewer than seven closed candles the direction is unknown, so no trades.
 5. Ideas from the 4-hour chart. Action on the 1-hour or 30-minute chart.
+6. Mixed. The peak is higher but the dip is lower. No trades.
+7. No. All the readings that are switched on must agree.
 
 </details>
 

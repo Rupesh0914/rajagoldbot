@@ -31,12 +31,20 @@ class LevelsCommand(unittest.TestCase):
         self.assertIn("NEW LEVEL: ceiling at 3761.00, made by the 09:00 candle, usable from 10:30", out)
         self.assertIn("NEW LEVEL: floor at 3742.00, made by the 10:30 candle, usable from 12:00", out)
         self.assertIn("BROKEN: closed through the ceiling at 3761.00", out)
-        self.assertTrue(out.endswith("Levels still standing: floor 3742.00"))
+        self.assertIn("Levels still standing: floor 3742.00\n", out)
+        self.assertTrue(out.endswith("floor 3742.00: price has turned here once"))
 
     def test_a_stricter_strength_keeps_only_the_floor(self):
         out = run("levels", "--strength", "4")
         self.assertNotIn("ceiling", out)
-        self.assertTrue(out.endswith("Levels still standing: floor 3742.00"))
+        self.assertIn("Levels still standing: floor 3742.00\n", out)
+
+    def test_the_example_where_price_turns_twice_at_the_same_area(self):
+        out = run("levels", "--example", "twice")
+        self.assertNotIn("BROKEN", out)
+        self.assertIn("ceiling 3761.00: price has turned here 2 times", out)
+        self.assertIn("ceiling 3760.00: price has turned here 2 times", out)
+        self.assertIn("floor 3742.00: price has turned here once", out)
 
     def test_strength_below_one_is_refused(self):
         with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
@@ -53,6 +61,14 @@ class DirectionCommand(unittest.TestCase):
     def test_lookback_below_one_is_refused(self):
         with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
             run("direction", "3700", "3710", "--lookback", "0")
+
+
+class StructureCommand(unittest.TestCase):
+    def test_the_lesson_three_example_steps_up(self):
+        out = run("structure")
+        self.assertEqual(out.splitlines()[:4], ["peak at 3715.00", "dip  at 3697.00", "peak at 3731.00", "dip  at 3712.00"])
+        self.assertIn("Structure: up", out)
+        self.assertTrue(out.endswith("Closes rule (lesson 3, section 4): up"))
 
 
 if __name__ == "__main__":

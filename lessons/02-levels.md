@@ -129,6 +129,35 @@ python -m rajabot levels
 Then try `python -m rajabot levels --strength 4` and see that the stricter setting keeps only
 the floor.
 
+## 8. Level quality: how many times has price turned here?
+
+Your eye sees this at a glance: some levels are a single turn, and some are an area where gold
+has turned again and again. The second kind is the one everybody is watching.
+
+The bot measures it with a count:
+
+> **Turns at a level** = how many confirmed swings, highs or lows, sit close to that price.
+
+"Close" needs a number too. The bot uses **half the height of an average recent candle** (the
+last 20 closed 30-minute candles). When gold is moving a lot the area is wider, and when it is
+quiet the area is narrower, the same way you would shade a thicker or thinner zone by eye.
+
+Two details:
+
+- Highs and lows both count. A ceiling that was broken and later held as a floor is the same
+  area seen twice. Traders call that a flip.
+- Only swings from the last 7 days count, and only confirmed ones.
+
+Example. Same morning as before, but this time gold does not break 3761. It climbs back, turns
+at 3760, and falls again. Now there are two ceilings a dollar apart, and each scores 2:
+
+```
+python -m rajabot levels --example twice
+```
+
+What the bot does with the count is not decided yet. One option is to trade only breaks of
+levels that score 2 or more. Lesson 9 tests the bot with that option on and off.
+
 ## What the bot piece does
 
 `rajabot/levels.py` keeps the list of levels, updated each time a 30-minute candle closes:
@@ -136,6 +165,8 @@ the floor.
 1. Drops levels older than 7 days.
 2. Removes levels the candle closed through, and reports them as broken.
 3. Adds any swing the candle just confirmed, stamped with the time it became usable.
+
+It can also say, for any level, how many times price has turned in that area.
 
 It decides nothing. It only keeps the map current.
 
@@ -153,6 +184,8 @@ what the bot knew at any moment never changes when later prices arrive.
 4. Why is it cheating to test a strategy with levels marked on a finished chart?
 5. A ceiling is broken at 12:30. An hour later price drops back below it. Does the bot treat it
    as a ceiling again?
+6. Gold turned down at 3761 on Monday and again at 3760 on Tuesday. An average 30-minute candle
+   is 7 dollars tall. How many turns does the bot count at 3760?
 
 <details>
 <summary>Answers</summary>
@@ -164,6 +197,7 @@ what the bot knew at any moment never changes when later prices arrive.
 4. Because the levels were only known after later candles closed. Using them earlier gives the
    test information a real trader did not have at the time.
 5. No. A broken level is removed for good.
+6. Two. The reach is half of 7, which is 3.5 dollars, and 3761 is within 3.5 of 3760.
 
 </details>
 

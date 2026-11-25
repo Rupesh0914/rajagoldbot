@@ -124,14 +124,18 @@ def server_seconds(utc_seconds: int) -> int:
     return calendar.timegm(local.replace(tzinfo=None).timetuple()) + SERVER_AHEAD_OF_NEW_YORK
 
 
-def build_four_hour_candles(bars: Iterable[Bar], as_of: int | None = None) -> list[Candle]:
-    """CLOSED 4-hour candles as the broker's own chart draws them (blocks of the broker's clock).
+def build_broker_candles(bars: Iterable[Bar], hours: int, as_of: int | None = None) -> list[Candle]:
+    """CLOSED candles of `hours` length as the broker's own chart draws them (blocks of the broker's
+    clock): 4 for the 4-hour chart, 24 for the daily chart.
 
-    A candle's `time` is the start of its 4-hour block, even when the block's first minutes had no
-    bars (the block after the daily break starts an hour late). The last block is left out unless
-    it is known to have closed: a later bar exists, or `as_of` (the current time, UTC seconds) is
-    in a later block.
+    A candle's `time` is the start of its block, even when the block's first minutes had no bars
+    (the block after the daily break starts an hour late). The last block is left out unless it is
+    known to have closed: a later bar exists, or `as_of` (the current time, UTC seconds) is in a
+    later block.
     """
+    if hours not in (1, 2, 3, 4, 6, 8, 12, 24):
+        raise ValueError("hours must divide a day evenly")
+    length = hours * 3600
     candles: list[Candle] = []
     forming: list | None = None                      # [block, block start, open, high, low, close]
     previous = None
@@ -140,19 +144,30 @@ def build_four_hour_candles(bars: Iterable[Bar], as_of: int | None = None) -> li
             raise ValueError("bars must be in time order with no repeats (at %d)" % bar.time)
         previous = bar.time
         on_server = server_seconds(bar.time)
-        block = on_server // FOUR_HOURS
+        block = on_server // length
         if forming is not None and forming[0] != block:
-            candles.append(Candle(forming[1], forming[2], forming[3], forming[4], forming[5], FOUR_HOURS))
+            candles.append(Candle(forming[1], forming[2], forming[3], forming[4], forming[5], length))
             forming = None
         if forming is None:
-            forming = [block, bar.time - on_server % FOUR_HOURS, bar.open, bar.high, bar.low, bar.close]
+            forming = [block, bar.time - on_server % length, bar.open, bar.high, bar.low, bar.close]
         else:
             forming[3] = max(forming[3], bar.high)
             forming[4] = min(forming[4], bar.low)
             forming[5] = bar.close
-    if forming is not None and as_of is not None and server_seconds(as_of) // FOUR_HOURS > forming[0]:
-        candles.append(Candle(forming[1], forming[2], forming[3], forming[4], forming[5], FOUR_HOURS))
+    if forming is not None and as_of is not None and server_seconds(as_of) // length > forming[0]:
+        candles.append(Candle(forming[1], forming[2], forming[3], forming[4], forming[5], length))
     return candles
+
+
+def build_four_hour_candles(bars: Iterable[Bar], as_of: int | None = None) -> list[Candle]:
+    """CLOSED 4-hour candles on the broker's clock. See `build_broker_candles`."""
+    return build_broker_candles(bars, 4, as_of)
+
+
+def build_daily_candles(bars: Iterable[Bar], as_of: int | None = None) -> list[Candle]:
+    """CLOSED daily candles on the broker's clock: each runs from 17:00 to 17:00 New York time,
+    so there are five a week and no stub candle on Sunday. See `build_broker_candles`."""
+    return build_broker_candles(bars, 24, as_of)
 
 
 def describe(candle: Candle) -> str:

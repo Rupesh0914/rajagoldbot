@@ -3,7 +3,7 @@ import random
 import unittest
 
 from rajabot.candles import Candle
-from rajabot.examples import LESSON_2
+from rajabot.examples import LESSON_2, LESSON_2_TWICE
 from rajabot.levels import HIGH, LOW, Level, LevelBook, find_swings, standing_levels
 
 HALF_HOUR = 1800
@@ -166,6 +166,61 @@ class Lookups(unittest.TestCase):
         self.assertEqual([l.price for l in book.ceilings_above(3755.0)], [3760.0, 3770.0])
         self.assertEqual([l.price for l in book.floors_below(3755.0)], [3745.0, 3740.0])
         self.assertEqual(book.ceilings_above(3770.0), [])
+
+
+class LevelQuality(unittest.TestCase):
+    def book_after(self, candles, strength=2, **options):
+        book = LevelBook(strength, **options)
+        for candle in candles:
+            book.add(candle)
+        return book
+
+    def test_reach_is_half_the_average_candle_height(self):
+        book = LevelBook(2)
+        self.assertEqual(book.reach, 0.0)
+        self.assertEqual(book.turns_at(3750.0), 0)
+        for candle in LESSON_2_TWICE:
+            book.add(candle)
+        heights = [candle.range for candle in LESSON_2_TWICE]
+        self.assertAlmostEqual(book.reach, 0.5 * sum(heights) / len(heights))
+        self.assertAlmostEqual(book.reach, 3.5)
+
+    def test_reach_uses_only_the_last_twenty_candles(self):
+        tall = candles_from([(3760, 3740, 3750)] * 5)                       # 20 high
+        short = candles_from([(3751, 3749, 3750)] * 20, start=5 * HALF_HOUR)   # 2 high
+        self.assertAlmostEqual(self.book_after(tall + short, strength=1).reach, 1.0)
+
+    def test_two_turns_at_the_same_area_count_as_two(self):
+        book = self.book_after(LESSON_2_TWICE)
+        self.assertEqual(sorted((l.kind, l.price) for l in book.levels),
+                         [(HIGH, 3760.0), (HIGH, 3761.0), (LOW, 3742.0)])
+        self.assertEqual(book.turns_at(3761.0), 2)
+        self.assertEqual(book.turns_at(3760.0), 2)
+        self.assertEqual(book.turns_at(3742.0), 1)
+        self.assertEqual(book.turns_at(3700.0), 0)
+
+    def test_a_broken_level_still_counts_as_a_turn_at_that_area(self):
+        # In the first example the 3761 ceiling is broken, but price did turn there once.
+        book = self.book_after(LESSON_2)
+        self.assertEqual([(l.kind, l.price) for l in book.levels], [(LOW, 3742.0)])
+        self.assertEqual(book.turns_at(3761.0), 1)
+
+    def test_old_turns_stop_counting(self):
+        book = self.book_after(LESSON_2_TWICE, max_age_days=1.0)
+        late = LESSON_2_TWICE[-1].time + 2 * 86400
+        book.add(Candle(late, 3750.0, 3751.0, 3749.0, 3750.0, HALF_HOUR))
+        self.assertEqual(book.levels, [])
+        self.assertEqual(book.turns_at(3761.0), 0)
+
+    def test_quality_known_at_any_moment_never_changes_later(self):
+        candles = random_candles(400, seed=3)
+        full, seen = LevelBook(2), []
+        for candle in candles:
+            full.add(candle)
+            seen.append((full.reach, [full.turns_at(level.price) for level in full.levels]))
+        for cut in (30, 111, 250, 400):
+            part = self.book_after(candles[:cut])
+            self.assertEqual((part.reach, [part.turns_at(level.price) for level in part.levels]), seen[cut - 1])
 
 
 if __name__ == "__main__":

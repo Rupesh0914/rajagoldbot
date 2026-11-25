@@ -11,6 +11,9 @@ have closed. So every level carries the time it became usable, and nothing may u
 
 A level stops being a level when a candle closes through it (it is broken) or when it is too old.
 
+Level quality: a person sees at a glance that price has turned at the same area more than once.
+`LevelBook.turns_at` counts that: how many confirmed swings sit within a small reach of a price.
+
 This module finds and tracks levels. It decides nothing and places no order.
 """
 from __future__ import annotations
@@ -22,6 +25,8 @@ from .candles import Candle
 
 DAY = 86400
 HIGH, LOW = "high", "low"
+ZONE_CANDLES = 20           # the reach of a zone is measured from this many recent candles
+ZONE_SHARE = 0.5            # ...as this share of their average height
 
 
 @dataclass(frozen=True)
@@ -94,11 +99,16 @@ class LevelBook:
          close below a floor. A wick through a level does not break it;
       3. swings this candle confirms are added.
     A broken level never comes back.
+
+    The book also remembers every swing it confirmed within the age limit, broken or not, so it
+    can say how many times price has turned near a price (`turns_at`).
     """
     strength: int
     max_age_days: float = 7.0
     levels: list[Level] = field(default_factory=list)
     _window: list[Candle] = field(default_factory=list, repr=False)
+    _heights: list[float] = field(default_factory=list, repr=False)      # last ZONE_CANDLES candle heights
+    _turns: list[Level] = field(default_factory=list, repr=False)        # confirmed swings within the age limit
 
     def __post_init__(self) -> None:
         _check_strength(self.strength)
@@ -122,8 +132,29 @@ class LevelBook:
         del self._window[:-(2 * self.strength + 1)]
         new = tuple(_swings_confirmed_by_last(self._window, self.strength))
 
+        self._heights.append(candle.range)
+        del self._heights[:-ZONE_CANDLES]
+        self._turns = [turn for turn in self._turns if turn.usable_from + limit > now] + list(new)
+
         self.levels = standing + list(new)
         return Update(expired, broken, new)
+
+    @property
+    def reach(self) -> float:
+        """How close two turns must be to count as the same area: half the average height of the
+        last 20 closed candles. It widens when gold is moving a lot and narrows when it is quiet."""
+        if not self._heights:
+            return 0.0
+        return ZONE_SHARE * sum(self._heights) / len(self._heights)
+
+    def turns_at(self, price: float) -> int:
+        """How many confirmed swings, highs or lows, sit within `reach` of this price.
+
+        Counts swings confirmed within the age limit, including ones since broken: a broken
+        ceiling that price later bounces off is the same area seen twice. A lone level scores 1.
+        """
+        reach = self.reach
+        return sum(1 for turn in self._turns if abs(turn.price - price) <= reach)
 
     def ceilings_above(self, price: float) -> list[Level]:
         """Standing ceilings above a price, nearest first."""

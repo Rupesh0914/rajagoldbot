@@ -2,9 +2,10 @@
 import unittest
 from datetime import datetime, timezone
 
-from rajabot.candles import Bar, Candle, build_four_hour_candles
-from rajabot.direction import (BUY, DOWN, FLAT, SELL, UNKNOWN, UP, allows, direction, direction_of_closes,
-                               explain)
+from rajabot.candles import Bar, Candle, build_daily_candles, build_four_hour_candles
+from rajabot.direction import (BUY, DOWN, FLAT, MIXED, SELL, UNKNOWN, UP, allows, combine, daily_direction,
+                               direction, direction_of_closes, explain, structure)
+from rajabot.examples import LESSON_3
 
 FOUR_HOURS = 4 * 3600
 
@@ -89,6 +90,99 @@ class NoHindsight(unittest.TestCase):
         spike = [Bar(end_of_seventh + i * 60, 3900, 3901, 3899, 3900) for i in range(30)]
         now = end_of_seventh + 30 * 60
         self.assertEqual(direction(build_four_hour_candles(bars + spike, as_of=now)), DOWN)
+
+
+def zigzag(points):
+    """4-hour candles from (high, low) pairs; closes sit mid-candle."""
+    return [Candle(i * FOUR_HOURS, (h + l) / 2, h, l, (h + l) / 2, FOUR_HOURS) for i, (h, l) in enumerate(points)]
+
+
+class Structure(unittest.TestCase):
+    STEPPING_UP = [(3700, 3690), (3706, 3696), (3715, 3703), (3711, 3700), (3708, 3697), (3714, 3699),
+                   (3722, 3709), (3731, 3718), (3727, 3715), (3724, 3712), (3730, 3714), (3738, 3725)]
+
+    def test_the_lesson_example_steps_up(self):
+        self.assertEqual(structure(LESSON_3), UP)
+        self.assertEqual(structure(zigzag(self.STEPPING_UP)), UP)
+
+    def test_the_mirror_image_steps_down(self):
+        mirrored = [(7500 - low, 7500 - high) for high, low in self.STEPPING_UP]
+        self.assertEqual(structure(zigzag(mirrored)), DOWN)
+
+    def test_a_higher_peak_with_a_lower_dip_is_mixed(self):
+        points = list(self.STEPPING_UP)
+        points[9] = (3724, 3695)            # second dip undercuts the first (3697)
+        points[10] = (3730, 3696)
+        self.assertEqual(structure(zigzag(points)), MIXED)
+
+    def test_it_is_unknown_until_two_peaks_and_two_dips_are_confirmed(self):
+        candles = zigzag(self.STEPPING_UP)
+        self.assertEqual(structure(candles[:11]), UNKNOWN)      # the second dip needs one more closed candle
+        self.assertEqual(structure(candles[:12]), UP)
+        self.assertEqual(structure([]), UNKNOWN)
+
+    def test_only_peaks_and_dips_already_confirmed_are_used(self):
+        import random
+        from rajabot.levels import HIGH, LOW, find_swings
+        rng, price, points = random.Random(5), 3750.0, []
+        for _ in range(300):
+            price += rng.uniform(-8, 8)
+            points.append((price + rng.uniform(1, 6), price - rng.uniform(1, 6)))
+        candles = zigzag(points)
+        every_swing = find_swings(candles, 2)                  # found with the whole future in view
+        seen = set()
+        for cut in range(1, 301):
+            now = candles[cut - 1].close_time
+            known = [s for s in every_swing if s.usable_from <= now]      # what could be known by then
+            peaks = [s.price for s in known if s.kind == HIGH][-2:]
+            dips = [s.price for s in known if s.kind == LOW][-2:]
+            if len(peaks) < 2 or len(dips) < 2:
+                expected = UNKNOWN
+            elif peaks[1] > peaks[0] and dips[1] > dips[0]:
+                expected = UP
+            elif peaks[1] < peaks[0] and dips[1] < dips[0]:
+                expected = DOWN
+            else:
+                expected = MIXED
+            self.assertEqual(structure(candles[:cut]), expected, cut)
+            seen.add(expected)
+        self.assertEqual(seen, {UNKNOWN, UP, DOWN, MIXED})
+
+
+class DailyBackground(unittest.TestCase):
+    def daily(self, closes):
+        return [Candle(i * 86400, c, c + 5, c - 5, c, 86400) for i, c in enumerate(closes)]
+
+    def test_higher_or_lower_than_a_trading_week_ago(self):
+        self.assertEqual(daily_direction(self.daily([3700, 3720, 3690, 3710, 3730, 3745])), UP)
+        self.assertEqual(daily_direction(self.daily([3745, 3720, 3690, 3710, 3730, 3700])), DOWN)
+        self.assertEqual(daily_direction(self.daily([3700, 3720, 3690, 3710, 3730])), UNKNOWN)     # five: one short
+
+    def test_daily_candles_run_from_five_pm_to_five_pm_new_york(self):
+        start = int(datetime(2026, 1, 12, 22, 0, tzinfo=timezone.utc).timestamp())     # Monday 17:00 New York
+        bars = [Bar(start + 3600 + i * 60, 3750.0, 3751.0, 3749.0, 3750.0) for i in range(23 * 60)]   # after the break
+        self.assertEqual(build_daily_candles(bars), [])                                # not proven closed
+        candles = build_daily_candles(bars, as_of=start + 86400)
+        self.assertEqual([(c.time, c.close_time) for c in candles], [(start, start + 86400)])
+        with self.assertRaises(ValueError):
+            from rajabot.candles import build_broker_candles
+            build_broker_candles(bars, 5)
+
+
+class Combining(unittest.TestCase):
+    def test_all_must_agree(self):
+        self.assertEqual(combine(UP, UP, UP), UP)
+        self.assertEqual(combine(DOWN, DOWN), DOWN)
+        for readings in ((UP, DOWN), (UP, UP, MIXED), (DOWN, UNKNOWN), (UP, FLAT), (FLAT, FLAT)):
+            self.assertEqual(combine(*readings), MIXED, readings)
+            self.assertFalse(allows(combine(*readings), BUY))
+            self.assertFalse(allows(combine(*readings), SELL))
+
+    def test_one_reading_passes_through(self):
+        for reading in (UP, DOWN, FLAT, UNKNOWN, MIXED):
+            self.assertEqual(combine(reading), reading)
+        with self.assertRaises(ValueError):
+            combine()
 
 
 if __name__ == "__main__":
