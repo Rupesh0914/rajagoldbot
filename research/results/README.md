@@ -49,3 +49,53 @@ is none.
    run, which is hindsight.
 4. Lesson 5 (room to run) and lesson 6 (stop and target) are the next real test of the idea, and
    the check will be extended to use them.
+
+## Run 002, 2026-11-25: combinations
+
+Report: [002-signal-check.md](002-signal-check.md). Code `3dbf158`.
+
+**The finding: when and which way matter. The level break still does not.**
+
+| | Signals | Wins | Average (units) |
+|---|---|---|---|
+| Base trigger (run 001) | 784 | 50.0% | +0.000 |
+| Trigger, New York session + closes rule | 217 | 54.2% | +0.076 |
+| **No level**, New York session + closes rule | 1,242 | 53.2% | +0.063 |
+
+- Adding session hours and the 4-hour direction lifted the trigger from 50.0% to 54.2%.
+- **The same two filters with no level at all did 53.2%, on six times as many signals.** That
+  no-level line is the only one in either report whose likely range clears zero (+0.008 to
+  +0.119), and only just.
+- So the lift comes from *when* (New York hours) and *which way* (with the 4-hour direction).
+  One point of it, at most, comes from the level, and one point on 217 signals is noise.
+- Level quality added nothing on top: session + closes + held twice did 53.1%.
+
+**The hindsight pick fell apart, as hindsight picks do.** "Held at least three times" looked
+best in run 001 (53.3%). Combined with the session and the closes rule it dropped to 51.6% on 66
+signals. Nothing was built on it.
+
+**How big is this, if it is real?** +0.063 units on a 1-to-1 bet is a profit factor of about
+1.14. That is thin, and under the 1.20 pass mark that lesson 9 will use. It is a clue worth
+following, not a result.
+
+**A caution on the direction result.** Gold rose strongly through this whole period. "Trade
+with the 4-hour direction" may partly be "gold kept going up". The base signals show buys at
+48.8% and sells at 51.5%, so it is not simply a buying bias, but the session + direction line
+has not been split by side yet. The next check does that.
+
+**What the bot must now beat.** "Any convincing candle, in New York hours, with the 4-hour
+direction" becomes the standing benchmark. A level-based rule that cannot beat it is not earning
+its complexity.
+
+**Decisions taken from this run**
+
+1. Session hours (07:00 to 16:00 New York) and the closes rule go into the bot's working
+   candidate. Both were in the notes before any data, and both moved the result the right way.
+2. Level quality stays an option, switched off. It did not add to the combination.
+3. The level break is kept, unproven. In the notes its job is not only to predict direction: it
+   gives the stop (behind the signal candle) and the target (the next level), and a trade is
+   taken only when there is room between them. Lessons 5 and 6 build that, and the check then
+   becomes a real trade test in R, with the benchmark above run the same way.
+4. The body result from run 001 (fuller candles do worse) points at entering late. The notes have
+   an answer to that: wait for price to come back to the broken level and enter there (the
+   retest, lesson 12). It will be tested beside the immediate entry once stops and targets exist.
