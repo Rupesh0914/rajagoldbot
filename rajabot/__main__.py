@@ -10,7 +10,9 @@ from .direction import explain
 from .examples import (LESSON_2, LESSON_2_TWICE, LESSON_3, LESSON_4_WEAK, LESSON_4_WICK, LESSON_5_ROOM,
                        LESSON_5_TIGHT)
 from .levels import HIGH, LevelBook, find_swings
+from .candles import Bar
 from .levels import ZONE_SHARE
+from .manage import HALVES, QUARTERS, SINGLE, Position, target_price
 from .risk import DEFAULT_RISK_SHARE, Contract, NoTrade, describe_plan, plan_trade, position_size
 from .space import DEFAULT_MIN_RATIO, describe_room, measure_room
 from .trigger import DEFAULT_MIN_BODY, Signal, Skip, Trigger
@@ -120,6 +122,53 @@ def plan_story(candles: list[Candle], balance: float, risk_percent: float, sprea
     return ["No signal in this example."]
 
 
+def _walk(prices: list[float], start: int, spread: float) -> list[Bar]:
+    """One-minute bars that move in small steps through the given prices, in order."""
+    bars, time, at = [], start, prices[0]
+    for goal in prices[1:]:
+        steps = max(1, int(abs(goal - at) / 0.25))
+        for index in range(1, steps + 1):
+            nxt = at + (goal - at) * index / steps if index < steps else goal
+            last = bars[-1].close if bars else prices[0]
+            bars.append(Bar(time, last, max(last, nxt), min(last, nxt), nxt, spread))
+            time += 60
+        at = goal
+    return bars
+
+
+def exits_story(balance: float, spread: float = 0.20) -> list[str]:
+    """The lesson's trade ended three ways, under each exit style."""
+    trigger = Trigger(LevelBook(2))
+    for candle in LESSON_5_ROOM:
+        result = trigger.on_candle(candle)
+        if isinstance(result, Signal):
+            break
+    plan = plan_trade(result, result.candle.close, spread, balance, trigger.book.reach / ZONE_SHARE)
+    room = measure_room(result, trigger.book, plan.entry, plan.distance)
+    target = target_price(plan, room.wall, spread)
+    reward = target - plan.entry
+    lines = ["BUY %.2f lots. Entry %.2f. Stop %.2f (risk %.2f). Target %.2f, a touch in front of the ceiling at %.2f." % (
+                 plan.lots, plan.entry, plan.stop, plan.distance, target, room.wall.price),
+             "The target is %.2f away: %.2fR." % (reward, reward / plan.distance), ""]
+    for style in (SINGLE, HALVES, QUARTERS):
+        position = Position(plan, target, style, result.time, stop_buffer=spread)
+        parts = ", ".join("%.2f lots at %.2f" % (leg.lots, leg.price) for leg in position.legs)
+        lines.append("%-8s closes %s" % (style.name, parts))
+    endings = [("Straight to the target", [plan.entry, target + 0.5]),
+               ("60% of the way, then all the way back", [plan.entry, plan.entry + 0.6 * reward, plan.stop - 1.0]),
+               ("Straight to the stop", [plan.entry, plan.stop - 0.5])]
+    lines += ["", "%-40s %8s %8s %9s" % ("What price did", "single", "halves", "quarters")]
+    for name, path in endings:
+        results = []
+        for style in (SINGLE, HALVES, QUARTERS):
+            position = Position(plan, target, style, result.time, stop_buffer=spread)
+            for bar in _walk(path, result.time, spread):
+                position.on_bar(bar)
+            results.append(position.result_r)
+        lines.append("%-40s %+7.2fR %+7.2fR %+8.2fR" % (name, results[0], results[1], results[2]))
+    return lines
+
+
 def structure_story(candles: list[Candle], strength: int) -> list[str]:
     """Show the peaks and dips of the lesson's 4-hour example and what they add up to."""
     lines = []
@@ -170,6 +219,9 @@ def main(argv: list[str] | None = None) -> int:
     size.add_argument("risk_money", type=float, help="money you accept losing on the trade")
     size.add_argument("distance", type=float, help="entry to stop, in dollars of gold price")
     size.add_argument("--usd-rate", type=float, default=1.0, help="what one US dollar is worth in the account's currency")
+    exits = commands.add_parser("exits", help="Lesson 7: the same trade ended three ways, under each exit style")
+    exits.add_argument("--balance", type=float, default=100000.0,
+                       help="account balance (default 100000, big enough to split evenly; try 10000 or 3000)")
     direction = commands.add_parser("direction", help="Lesson 3: which way, from 4-hour closing prices (oldest first)")
     direction.add_argument("closes", type=float, nargs="+", help="closing prices of closed 4-hour candles, oldest first")
     direction.add_argument("--lookback", type=int, default=DEFAULT_LOOKBACK,
@@ -213,6 +265,10 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print("%.2f lots. If stopped out: -%.2f. Each dollar gold moves is worth %.2f." % (
                 lots, args.distance * contract.money_per_dollar(lots), contract.money_per_dollar(lots)))
+    elif args.command == "exits":
+        if args.balance < 2000:
+            parser.error("with under 2000 the lesson's trade is too small to place at all")
+        print("\n".join(exits_story(args.balance)))
     elif args.command == "structure":
         print("\n".join(structure_story(LESSON_3, STRUCTURE_STRENGTH)))
     elif args.command == "direction":

@@ -137,5 +137,21 @@ class PlanAndSizeCommands(unittest.TestCase):
             run("plan", "--risk", "6")
 
 
+class ExitsCommand(unittest.TestCase):
+    def test_the_same_trade_ended_three_ways(self):
+        out = run("exits")
+        self.assertIn("Target 3774.80, a touch in front of the ceiling at 3775.00.", out)
+        self.assertIn("The target is 12.60 away: 1.50R.", out)
+        lines = {line[:40].strip(): line[40:].split() for line in out.splitlines() if line.endswith("R")}
+        self.assertEqual(lines["Straight to the target"], ["+1.50R", "+1.12R", "+0.93R"])
+        self.assertEqual(lines["60% of the way, then all the way back"], ["-1.00R", "+0.38R", "+0.46R"])
+        self.assertEqual(lines["Straight to the stop"], ["-1.00R", "-1.00R", "-1.00R"])
+
+    def test_a_small_account_gets_fewer_parts(self):
+        self.assertIn("quarters closes 0.01 lots at 3768.50", run("exits", "--balance", "3000"))
+        with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+            run("exits", "--balance", "500")
+
+
 if __name__ == "__main__":
     unittest.main()

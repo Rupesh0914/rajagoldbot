@@ -29,8 +29,8 @@ share of the account, and be out by the end of the New York day.
 | 4 | [The trigger: a 30-minute close through a level](lessons/04-the-trigger.md) | `rajabot/trigger.py` | Done |
 | 5 | [Room to run: is there open space ahead?](lessons/05-room-to-run.md) | `rajabot/space.py` | Done |
 | 6 | [Stop loss, costs and how much to risk](lessons/06-stop-costs-and-size.md) | `rajabot/risk.py` | Done |
-| 7 | Managing the trade: partial closes, break-even, going flat | `rajabot/manage.py` | Next |
-| 8 | When not to trade: sideways markets, hours, news, daily safety limits | `rajabot/filters.py` | |
+| 7 | [Managing the trade: partial closes, break-even, going flat](lessons/07-managing-the-trade.md) | `rajabot/manage.py` | Done |
+| 8 | When not to trade: sideways markets, hours, news, daily safety limits | `rajabot/filters.py` | Next |
 | 9 | Honest testing: a backtest that cannot fool us | `rajabot/backtest/` | |
 | 10 | Connecting to MetaTrader 5 on a demo account | `mt5/` | |
 | 11 | Watching it: journal and daily report | `rajabot/journal.py` | |
@@ -81,4 +81,5 @@ python -m rajabot structure                      # lesson 3: peaks and dips step
 python -m rajabot trigger                        # lesson 4: a signal, a skip, or nothing
 python -m rajabot room                           # lesson 5: is there room to run?
 python -m rajabot plan                           # lesson 6: entry, stop and lot size
+python -m rajabot exits                          # lesson 7: one trade ended three ways
 ```

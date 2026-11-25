@@ -40,7 +40,7 @@ It is updated with every lesson.
 | S06 | Escape from a sideways range | Lessons 5 and 8: staying out of the middle of a range is part of the core bot |
 | S07 | Exhaustion wick reversal | Lesson 15, **taught only.** The notes say Raja himself calls it advanced and risky |
 | S08 | Jobs-report straddle at 5% risk | Lesson 16, **taught only, not automated.** One example, extreme spread and slippage risk, and 5% risk is far above anything this bot will use |
-| S09 | Partial closes, break-even stop, a runner | Lesson 7 |
+| S09 | Partial closes, break-even stop, a runner | Lesson 7: partial closes and break-even are built. A runner is not yet |
 
 ## Things a working bot needs that the notes do not contain
 
@@ -107,6 +107,12 @@ may be tuned on test results: Lesson 9 fixes them before the data is seen.
 | 6 | Stop too wide | More than 3 average candles | Our choice |
 | 6 | Stop too tight | Less than 6 spreads | Our choice |
 | 6 | Lot rounding | Always down | Our choice |
+| 7 | Target | One spread in front of the next level | Our choice |
+| 7 | Target in open space | 2 times the risk | Our choice |
+| 7 | Exit style | Single target, halves, or the quarters ladder from the Sugarwood bot | Decided in Lesson 9; compared first in the trade test |
+| 7 | Stop after a banked part | Break-even after the first, then one step behind | From the Sugarwood bot |
+| 7 | Time stop | 4 hours with nothing banked (quarters only) | From the Sugarwood bot |
+| 7 | End of day | Everything closed at 16:50 New York | From the Sugarwood bot |
 
 ## Where the notes disagree with themselves
 
