@@ -9,10 +9,16 @@ design for the next version, to be checked against his real trades before it is 
 
 | Chart | Job | Source |
 |---|---|---|
-| 4-hour | Decide whether this is a BUY or a SELL environment | Raja, Tested |
-| 30-minute | Find the consolidation and its support and resistance. The 30-minute close is the trigger | Raja (he acts on 30-minute or 1-hour) |
-| 15-minute | Not used for now. Later: an optional earlier trigger, tested separately | Raja uses it sometimes and calls it riskier. Open |
-| 5-minute | Not used | No basis in the notes |
+| Daily, 4-hour | Decide whether this is a BUY or a SELL environment. **Draw the zones here** | Raja: his own video lists "Daily and 4H timeframes", then "Adjusting zones on 4H" |
+| 1-hour | Confirmation. Check the zone and the candle close on the 1-hour chart | Raja: "1H analysis and zone depth"; a 2026 trade titled "15min Structure and 1h Confirmation". Not yet in our bot |
+| 30-minute | The last look before the trade, and the trigger candle | Raja: "30-minute market analysis", then "Executing trades and wicks" |
+| 15-minute | Structure inside the move. Not used for now | Raja uses it. Open |
+| 5-minute | Not used | No basis found |
+
+*Corrected 2026-11-26 after his channel was catalogued. The first version of this draft drew the
+zones on the 30-minute chart and used only the 30-minute close. His own chapter lists put the
+zones on the 4-hour chart and name the 1-hour chart as confirmation. Exactly how he uses each is
+not known until the transcripts and frames are read.*
 
 ## The trade, step by step
 

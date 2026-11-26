@@ -191,3 +191,51 @@ A stop of 1.50 to 2.50 dollars meets a spread of about 0.13 to 0.16. The spread 
 of the risk on every trade, before any slippage. With our 8-dollar stops it is about 2%. A method
 this tight is far more sensitive to costs and to exact entry price than anything we have tested,
 and a one-minute price history may be too coarse to test it fairly.
+
+## 8. What his own channel listings show (2026-11-26)
+
+His videos were catalogued from YouTube's listings: titles, dates, lengths and the chapter lists
+he publishes under each video ([CATALOGUE.md](CATALOGUE.md)). This is first-hand, in his own
+wording, and thin: **no transcript and no frame has been read yet.** YouTube refuses transcript
+requests from cloud servers, so those have to come through the owner's PC.
+
+**On timeframes.** His video "How to do analysis on charts for Buys/Sells" (Aug 2024) is laid out
+by him in this order:
+
+| Time | His chapter title |
+|---|---|
+| 1:11 | Daily and 4H timeframes |
+| 2:06 | Adjusting zones on 4H |
+| 3:46 | 1H analysis and zone depth |
+| 5:54 | Identifying trade signals |
+| 7:32 | 30-minute market analysis |
+| 9:35 | Executing trades and wicks |
+
+A recent trade video (Oct 2026) is titled "$19,552 on 15min Structure and 1h Confirmation", with
+chapters "Why partials were closed" and "Where full position was closed".
+
+What follows from that:
+
+- **He draws his zones on the 4-hour chart,** after the daily. Our bot draws its levels on the
+  30-minute chart. That is a gap the notes did not show.
+- **The 1-hour chart is part of his decision,** named as the confirmation in at least one trade.
+  Our bot never looks at it. Section 3 of this review, and the corrected draft, were too narrow
+  in making the 30-minute close the only confirmation.
+- **The 30-minute chart comes after the 1-hour,** and then "executing trades and wicks".
+- **He uses smaller timeframes too:** "15min structure", and a video on "analyzing smaller time
+  frames" so as not to miss trades.
+- **He takes partial profits and explains why** in that trade. So partial closes are a live part
+  of his method in 2026, not an old habit.
+
+**On consolidation.** He has a short video titled "Why consolidation is my favorite price
+action?" with the chapters "Analyzing market structure" and "Waiting for confirmation". The
+owner's draft, which starts from a consolidation, is working from something he says himself.
+
+**On replayable trades.** Six gold simulation sessions have chapter lists that mark each trade
+("First trade simulation", "Second trade and fakeout", "Trade management and results"). And
+fourteen live sessions carry their date in the title, several from August to November 2026,
+inside the price history this project already holds. Those are the ones to line up against real
+prices.
+
+**A possible track record.** The description of a November 2026 live session links a Myfxbook
+page for "a $5000 account build". It has not been opened or checked.
