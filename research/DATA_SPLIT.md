@@ -34,6 +34,9 @@ rules were shaped on.
 
 ## What had been seen before this was fixed
 
+*Correction, 2026-11-26: the first point below gives the wrong date. That other test used this
+history from about 2026-07-19, not 2026-08-21. See `results/README.md`, runs 005 and 006.*
+
 - The last three months of this history (2026-08-21 onward, inside the holdout) were used in
   November 2026 to test a **different** strategy, the old bot's option-based levels. No rule of
   this bot was run on them, and no result from that test is used here.

@@ -234,3 +234,96 @@ judged on unseen data, not as a finding.
 | 4 | Level break only, with the 4-hour direction | 07:00-16:00 | No target |
 
 All use the stop beyond the signal candle, 0.5% risk, one trade at a time, flat at 16:50.
+
+## Runs 005 and 006, 2026-11-25: the final test
+
+Reports: [005-validation.md](005-validation.md), [006-holdout.md](006-holdout.md). Rules:
+[PROTOCOL.md](../PROTOCOL.md), fingerprint `01ec33dd426d62bc`, unchanged between the stages. Each
+stage ran once.
+
+# Verdict: PROVISIONAL
+
+By the rules fixed in advance: it made money on unseen prices, the worst fall was survivable, and
+it still made money with the spread doubled. **Luck has not been ruled out.**
+
+**Stage 1, validation (2025-11-23 to 2026-05-22).** The tool first reproduced run 004 exactly.
+
+| Candidate | Trades | Average R | Profit factor |
+|---|---|---|---|
+| 1: any convincing candle, target 2R | 329 | +0.058 | 1.11 |
+| **2: any convincing candle, no target** | 251 | +0.071 | 1.11 |
+| 3: the same, 07:00-13:00 | 222 | +0.054 | 1.08 |
+| 4: level break only | 80 | -0.137 | 0.78 |
+
+Candidate 2 was chosen by the rule: highest average R with at least 100 trades.
+
+**Stage 2, holdout (2026-05-24 to 2026-11-23), candidate 2 only.**
+
+| Gate | Requirement | Measured | |
+|---|---|---|---|
+| Sample | at least 100 trades | 239 | met |
+| Economic | profit factor at least 1.20, average above 0 R | 1.2120, +0.132 R | met |
+| Risk | largest fall at most 15% | 11.76% | met |
+| Robustness | profit factor at least 1.05 with spreads doubled | 1.1635 | met |
+| Uncertainty | low end of the 95% range above 0 R | -0.124 to +0.416 R | **NOT met** |
+
+## Reading it honestly
+
+**What held up.** On twelve months of prices that had no part in shaping it, the chosen version
+was positive in both halves: +17.9 R over 251 trades, then +31.6 R over 239. Together that is 490
+trades and +0.101 R a trade. It survived doubled spreads both times. On random prices this setup
+loses about 0.07 R a trade, so this is not nothing.
+
+**What did not.**
+
+1. **One month made the whole holdout result.** November 2026 made +35.1 R. The other six months
+   together lost 3.5 R. Take November away and the holdout is a small loss.
+2. **The economic gate was passed by a hair:** 1.212 against 1.20.
+3. **The result shrank a lot from development,** as results chosen on data always do. Profit
+   factor 1.33 on the development part, 1.11 on validation, 1.21 on the holdout. The honest
+   expectation going forward is the low end of that, not the high end.
+4. **There is no stable pattern between buys and sells.** Development: both about equal.
+   Validation: sells better. Holdout: buys lost 0.264 R each, sells made 0.482 R each. The bot
+   made its holdout money on the sell side in one month.
+5. **It loses most of the time.** 30% winners on the holdout. Two months of validation (April and
+   May 2026) lost 13 R and 12 R. A person watching that on a real account would find it hard.
+6. **The range is wide.** -0.124 to +0.416 R. The true figure could be a modest loss.
+
+**What this says about the Raja Banks ideas.** The version built on a level break (candidate 4)
+**lost** on the validation part: -0.137 R over 80 trades. The lead from run 004, that level
+breaks were the better half of the trades, did not survive unseen data. What survived is much
+plainer than the strategy in the notes: a strong 30-minute candle, in New York hours, with the
+4-hour direction, held to the stop or the end of the day. The parts that carried it (hours,
+direction, letting trades run) are in his teaching. The level work, the room rule, level quality
+and partial closes did not earn their place in our mechanical versions. That is a finding about
+**our rules**, not proof about his trading, which rests on judgement we could not write down.
+
+## A known inaccuracy in the frozen rules
+
+`PROTOCOL.md` section 8 and `DATA_SPLIT.md` say the first bot's option-levels test used this
+history "from 2026-08-21". That is wrong. Its report shows trades from **July 2026** (from about
+2026-07-19), so about a month more of the holdout had been used for that other strategy than the
+rules state. The session on the owner's PC caught this before stage 1.
+
+`PROTOCOL.md` is frozen and is left as it is. This note is the correction. It does not change
+the result: no rule of this bot was run on those months before the holdout stage, and no number
+from that other test shaped the candidates. It is recorded because a disclosure should be right.
+
+## How the stages were started
+
+The owner started stage 1, and then started stage 2 in the same session before the reading of
+stage 1 had been written. Nothing in the rules required a pause, the rules file was unchanged
+between the stages, and each stage ran once.
+
+## Decisions
+
+1. **The verdict stands as PROVISIONAL.** No setting is changed and nothing is rerun.
+2. **Candidate 2 goes to the demo account in lesson 10,** as the rules say, with this warning
+   attached: watch it for at least three months and 100 trades before believing anything, and
+   compare every month against this test.
+3. **Nothing goes on a real-money account.** That is the owner's decision and action.
+4. **All 25 months are now used.** There is no unseen history left. From here the only honest
+   new evidence is what the bot does on the demo account, trade by trade.
+5. The level break, the room rule, level quality, the ladder and the extra direction readings
+   stay in the code and the lessons, switched off, as things that were taught, tested, and did
+   not hold up.

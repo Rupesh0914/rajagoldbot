@@ -146,8 +146,70 @@ place on the demo account as a strategy.
 
 ## 9. The results
 
-See `research/results/README.md`, runs 005 (validation) and 006 (holdout). This section is
-filled in when the test has run, and says exactly what came out, whatever it is.
+The test ran on 25 November 2026, each stage once. Full reports are in `research/results`, runs
+005 and 006.
+
+### Verdict: PROVISIONAL
+
+**Stage 1, six unseen months, all four versions:**
+
+| Version | Trades | Average R | Profit factor |
+|---|---|---|---|
+| 1: any convincing candle, target 2R | 329 | +0.058 | 1.11 |
+| **2: any convincing candle, no target** | 251 | +0.071 | 1.11 |
+| 3: the same, mornings only | 222 | +0.054 | 1.08 |
+| 4: level break only | 80 | -0.137 | 0.78 |
+
+Version 2 won by the rule.
+
+**Stage 2, the last six months, version 2 only:**
+
+| Gate | Needed | Got | |
+|---|---|---|---|
+| Sample | 100 trades | 239 | Met |
+| Economic | Profit factor 1.20, average above 0 | 1.21, +0.132 R | Met |
+| Risk | Largest fall at most 15% | 11.8% | Met |
+| Robustness | 1.05 with spreads doubled | 1.16 | Met |
+| Uncertainty | Low end of the range above 0 | -0.124 to +0.416 R | **Not met** |
+
+Four gates of five. By the rules fixed in advance, that is PROVISIONAL: it made money on prices
+it had never seen, survivably, even with doubled costs, and luck has not been ruled out.
+
+### What to take from it
+
+**The good part is real.** Across both unseen halves, 490 trades made +0.10 R each. Most trading
+ideas, tested this strictly, lose. This one did not.
+
+**The weak parts are just as real.**
+
+- **One month made the whole second-half result.** November 2026 made +35 R. The other six months
+  together lost 3.5 R.
+- **The economic gate was passed by a hair:** 1.212 against a pass mark of 1.20.
+- **It shrank from development,** exactly as section 4 warned: profit factor 1.33 where it was
+  chosen, then 1.11 and 1.21 where it was not.
+- **It loses about seven trades in ten.** A few long runs pay for many small losses. April and May
+  2026 lost 13 R and 12 R back to back.
+- **Buys and sells did not behave the same** from one period to the next.
+
+**The version built on levels failed.** Version 4, the level break, lost money on unseen prices.
+What survived is plainer than the strategy this project set out to build: a strong candle, in New
+York hours, with the 4-hour direction, held to the stop or the end of the day. Three of Raja's
+ideas carried it (the hours, the direction, letting a trade run). The level work did not, in the
+mechanical form we gave it. That says something about our rules. It does not prove anything about
+his trading, which leans on judgement we could not write down.
+
+### What happens now
+
+By the rules, a PROVISIONAL result goes onto the **demo** account, to be watched. A sensible bar:
+at least three months and 100 trades before believing anything, with every month compared against
+this test.
+
+All 25 months of history are now used. There is nothing unseen left to test on. From here, the
+only honest new evidence is what the bot does on the demo account.
+
+One correction, recorded openly: the frozen rules say an earlier test of your first bot had used
+this history from 21 August 2026. It was from about 19 July. It does not change this result, and
+the rules file is left as it was frozen. The correction is in `research/results/README.md`.
 
 ## What the bot piece does
 

@@ -31,8 +31,8 @@ share of the account, and be out by the end of the New York day.
 | 6 | [Stop loss, costs and how much to risk](lessons/06-stop-costs-and-size.md) | `rajabot/risk.py` | Done |
 | 7 | [Managing the trade: partial closes, break-even, going flat](lessons/07-managing-the-trade.md) | `rajabot/manage.py` | Done |
 | 8 | [When not to trade: sideways markets, hours, news, daily safety limits](lessons/08-when-not-to-trade.md) | `rajabot/filters.py` | Done |
-| 9 | [Honest testing: a backtest that cannot fool us](lessons/09-honest-testing.md) | `rajabot/engine.py`, `research/final_test.py` | Rules frozen; test running |
-| 10 | Connecting to MetaTrader 5 on a demo account | `mt5/` | |
+| 9 | [Honest testing: a backtest that cannot fool us](lessons/09-honest-testing.md) | `rajabot/engine.py`, `research/final_test.py` | Done. Verdict: **PROVISIONAL** |
+| 10 | Connecting to MetaTrader 5 on a demo account | `mt5/` | Next |
 | 11 | Watching it: journal and daily report | `rajabot/journal.py` | |
 
 **Part 2: the other setups in the notes.** Each is taught, and joins the bot only if its own
@@ -55,7 +55,8 @@ setup in the notes, the lesson that covers it, and every number the bot had to c
    owner's action, by hand, in MetaTrader. No code or assistant in this project does it.
 2. **Closed candles only.** The bot never acts on a candle that is still forming.
 3. **No looking ahead.** Every decision uses only what was known at that moment. Tests enforce it.
-4. **Honest testing before trust.** Nobody knows yet whether these rules make money. Ideas are
+4. **Honest testing before trust.** The final test (Lesson 9) came out PROVISIONAL: it made money
+   on unseen prices, and luck is not ruled out. How it got there: Ideas are
    tried and fixed on the first 13 months of history only ([research/](research/README.md)). The
    last 12 months stay unseen until Lesson 9, which judges the bot on them with pass marks fixed
    in advance, and publishes the result whatever it says.
