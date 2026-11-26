@@ -46,6 +46,9 @@ honest test passes.
 | 15 | Exhaustion wicks and reversals | Taught only |
 | 16 | News days and the jobs-report tactic | Taught only, not automated |
 
+[research/raja/REVIEW.md](research/raja/REVIEW.md) sets out what the notes show of his actual
+trades, where our bot differs, and what only his charts can settle.
+
 [COVERAGE.md](COVERAGE.md) checks this plan against the owner's research notes: every rule and
 setup in the notes, the lesson that covers it, and every number the bot had to choose.
 
