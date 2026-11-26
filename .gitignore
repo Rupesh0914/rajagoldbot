@@ -7,3 +7,13 @@ __pycache__/
 .env
 .env.*
 .DS_Store
+
+# Raja Banks source material stays on the owner's own machine: this repo is public.
+/research/raja/source/transcripts/
+/research/raja/source/frames/
+/research/raja/source/**/*.mp4
+/research/raja/source/**/*.vtt
+/research/raja/source/**/*.jpg
+/research/raja/source/**/*.png
+/research/raja/WEB_FINDINGS.md
+.venv-raja/

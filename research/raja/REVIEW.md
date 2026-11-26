@@ -143,3 +143,51 @@ They are not a track record, and the notes say the videos do not show verified p
 even a bot that copied him perfectly would still have to earn its result in a test. Matching him
 is how we find out what his method actually is. It is not, by itself, evidence that the method
 makes money.
+
+## 7. What a web search added (2026-11-26)
+
+A search of public sources was run. **Its limit:** only search-result snippets could be read, not
+the pages, the videos or any chart. So everything here is a lead to confirm on his own charts,
+not a finding. Statements about his method only are kept here.
+
+| Question | What the search suggests | How sure |
+|---|---|---|
+| What is a pip on gold for him? | **Most likely 10 cents of gold price.** Two forum descriptions of his trading screen give the same sum: 25 lots moving 20 pips described as 5,000 dollars. He does not state it himself anywhere found | Moderate. Needs one chart with a stated stop and a visible price scale |
+| So how big are his stops? | If a pip is 10 cents: "15 pips" is about **1.50 dollars**, "25 pips" about 2.50, and the stop he refused (27 pips) about 2.70 | Follows from the line above |
+| Where does he take profit? | Described as heavy early partial closes: most of the position closed after roughly 10 pips (about 1 dollar), with a small part left to run. A course description gives the wick-fill target as "10 to 20 pips" | Moderate. Fits the owner's notes (50%, 90%) |
+| When does he trade? | The New York session. His dated 2022 live sessions were scheduled for 6:30 to 7:00 in the morning New York time | Fairly solid: from his own stream descriptions |
+| What triggers an entry? | A candle closing beyond a level with its body, not a wick, usually on the 30-minute chart | Moderate. Matches the owner's notes |
+| How does he draw zones? What makes one "fresh"? Exact stop rules? | **Nothing found anywhere public.** The owner's transcript notes are more specific than anything online | |
+| Is there a trade with a date, entry, stop and exit together? | **None found.** The best replayable material is two dated live sessions: 5 October 2022 and 16 November 2022 | |
+| Is his performance independently verified? | No verified record was found | |
+
+### Why this matters, if it holds up
+
+It would mean our bot and his trading are on **different scales**, not just different rules.
+
+| | His trading, on these leads | Our bot |
+|---|---|---|
+| Stop | About 1.50 to 2.50 dollars (gold was near 1,800 then) | About 8 dollars (gold near 4,000) |
+| Stop against a 30-minute candle | Well under one candle | More than one candle |
+| Profit taken | Mostly within the first dollar or two | Held about two hours, to the stop or the end of the day |
+| Character | Short, tight, many small wins | Long, loose, few large wins |
+
+Two consequences:
+
+1. **"Stop beyond the 30-minute signal candle" is probably not where his stop goes.** A stop
+   that tight sits inside the candle that triggered the trade. It must be placed off something
+   smaller: the zone's edge, or a 15-minute or smaller candle. This would also explain why he
+   cares about a 15-minute confirmation.
+2. **The owner's draft, with its quick exit, is closer to his scale than our tested bot is.** A
+   fixed one-candle exit is still not a rule of his that we have found. But "in and out quickly
+   for a small move" does look like how he trades, and our "hold for two hours" does not.
+
+Neither point is a reason to change anything yet. They are the first things to check when his
+chart frames are read.
+
+### A caution on costs
+
+A stop of 1.50 to 2.50 dollars meets a spread of about 0.13 to 0.16. The spread is then 6% to 10%
+of the risk on every trade, before any slippage. With our 8-dollar stops it is about 2%. A method
+this tight is far more sensitive to costs and to exact entry price than anything we have tested,
+and a one-minute price history may be too coarse to test it fairly.
